@@ -5,12 +5,12 @@ import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
 export const generateMetadata = async (): Promise<Metadata> => {
-    return { title: 'User' };
+    return { title: 'Usuário' };
 }
 
 const breadcrumbItems = [
-    { text: 'Dashboard', href: '/dashboard' },
-    { text: 'User' }
+    { text: 'Painel', href: '/dashboard' },
+    { text: 'Usuário' }
 ];
 const borderColors = ['border-emerald-500', 'border-violet-500', 'border-rose-500'];
 

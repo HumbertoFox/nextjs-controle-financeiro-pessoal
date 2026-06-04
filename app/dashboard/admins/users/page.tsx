@@ -8,18 +8,22 @@ import { Metadata } from 'next';
 import { UserActionButtons } from '@/_components/user-action-buttons';
 
 export const generateMetadata = async (): Promise<Metadata> => {
-    return { title: 'Users' };
+    return { title: 'Usuários' };
 }
 
 const breadcrumbItems = [
-    { text: 'Dashboard', href: '/dashboard' },
-    { text: 'Admins', href: '/dashboard/admins' },
-    { text: 'Users' }
+    { text: 'Painel', href: '/dashboard' },
+    { text: 'Administradores', href: '/dashboard/admins' },
+    { text: 'Usuários' }
 ];
 
 const pageSize = 10;
 
-export default async function UsersPage(props: { searchParams?: Promise<{ page?: number; }>; }) {
+export default async function UsersPage(props: {
+    searchParams?: Promise<{
+        page?: number;
+    }>;
+}) {
     const params = await props.searchParams;
     const rawPage = parseInt(String(params?.page ?? '1'), 10);
     const currentPage = Number.isNaN(rawPage) ? 1 : Math.max(1, rawPage);
@@ -34,17 +38,17 @@ export default async function UsersPage(props: { searchParams?: Promise<{ page?:
                     <Table className="w-full text-center text-xs">
                         <TableHeader>
                             <TableRow className="cursor-default">
-                                <TableHead className="text-center">No.</TableHead>
-                                <TableHead className="text-center max-lg:hidden">Code.</TableHead>
-                                <TableHead className="text-center max-lg:hidden">Name</TableHead>
+                                <TableHead className="text-center">Núm.</TableHead>
+                                <TableHead className="text-center max-lg:hidden">Cod.</TableHead>
+                                <TableHead className="text-center max-lg:hidden">Nome</TableHead>
                                 <TableHead className="text-center">E-mail</TableHead>
-                                <TableHead className="text-center">Actions</TableHead>
+                                <TableHead className="text-center">Ação</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {users.length === 0 && (
                                 <TableRow className="text-red-600 cursor-default">
-                                    <TableCell colSpan={5}>There are no registered users.</TableCell>
+                                    <TableCell colSpan={5}>Não há usuários registrados.</TableCell>
                                 </TableRow>
                             )}
                             {users.map((user, index) => (

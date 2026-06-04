@@ -5,7 +5,7 @@ import { Metadata } from 'next';
 import { getCsrfToken } from '@/_lib/csrf';
 
 export const generateMetadata = async (): Promise<Metadata> => {
-    return { title: 'Reset Password' };
+    return { title: 'Redefinir senha' };
 }
 
 export default async function ResetPasswordPage() {

@@ -5,7 +5,7 @@ import { Metadata } from 'next';
 import { getCsrfToken } from '@/_lib/csrf';
 
 export const generateMetadata = async (): Promise<Metadata> => {
-    return { title: 'Verify E-mail' };
+    return { title: 'Verificar e-mail' };
 }
 
 export default async function VerifyEmailPage() {

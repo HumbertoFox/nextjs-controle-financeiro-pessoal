@@ -37,7 +37,7 @@ export type UserProfilePageProps = {
 
 export type UserSettingsClientProps = {
     user: UserDetailsProps;
-    familyMembers: Pick<UserDetailsProps, 'id' | 'name' | 'avatar' | 'role'>[];
+    readonly familyMembers: Pick<UserDetailsProps, 'id' | 'name' | 'avatar' | 'role'>[];
 }
 
 export type ProfileForm = {
@@ -80,7 +80,7 @@ export type NavMainItemProps = {
 }
 
 export type DashboardSidebarHeaderProps = {
-    readonly items: BreadcrumbItemProps[];
+    items: BreadcrumbItemProps[];
 }
 
 export type HeadingProps = {
@@ -126,17 +126,17 @@ export type UsersActionsProps = {
 }
 
 export type UserActionsProps = {
-    user: UsersActionsProps;
+    readonly user: UsersActionsProps;
 }
 
 export type UserActionButtonsProps = {
     user: {
-        id: string;
-        name: string;
-        email: string;
-        deleted_at?: string | null;
+        readonly id: string;
+        readonly name: string;
+        readonly email: string;
+        readonly deleted_at?: string | null;
     };
-    csrfToken?: string;
+    readonly csrfToken?: string;
 }
 
 export type AdminActionsProps = {
@@ -146,47 +146,47 @@ export type AdminActionsProps = {
 
 export type AdminActionButtonsProps = {
     admin: {
-        id: string;
-        name: string;
-        email: string;
-        deleted_at?: string | null;
+        readonly id: string;
+        readonly name: string;
+        readonly email: string;
+        readonly deleted_at?: string | null;
     };
-    csrfToken?: string;
-    isLoggedAdmin: boolean;
+    readonly csrfToken?: string;
+    readonly isLoggedAdmin: boolean;
 }
 
 export type UserPublic = {
-    id: string;
-    name: string;
-    email: string;
-    role: UserRole;
-    avatar?: string | null;
-    email_verified?: string | null;
-    created_at: string;
-    updated_at: string;
+    readonly id: string;
+    readonly name: string;
+    readonly email: string;
+    readonly role: UserRole;
+    readonly avatar?: string | null;
+    readonly email_verified?: string | null;
+    readonly created_at: string;
+    readonly updated_at: string;
 }
 
 export type UserAdminPublic = UserPublic & {
-    deleted_at?: string | null;
+    readonly deleted_at?: string | null;
 }
 
 export type User = UserPublic & {
-    password: string;
-    family_id?: string | null;
-    deleted_at?: string | null;
+    readonly password: string;
+    readonly family_id?: string | null;
+    readonly deleted_at?: string | null;
 }
 
 export type VerificationToken = {
-    identifier: string;
-    token: string;
-    expires_at: string;
+    readonly identifier: string;
+    readonly token: string;
+    readonly expires_at: string;
 }
 
 export type RateLimitEntry = {
-    count: number;
-    reset_at: string;
+    readonly count: number;
+    readonly reset_at: string;
 }
 
 export type PasswordChecklistProps = {
-    password?: string;
+    readonly password?: string;
 }

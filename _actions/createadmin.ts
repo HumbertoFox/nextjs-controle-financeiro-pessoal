@@ -9,6 +9,7 @@ import sharp from 'sharp';
 import { userRepository } from '@/_lib/userrepositorys';
 import { regenerateCsrfToken, validateCsrfToken } from '@/_lib/csrf';
 import { MAX_DIMENSION, MAX_FILE_SIZE, MIME_TO_EXT, UserRole } from '@/_types';
+import { redirect } from 'next/navigation';
 
 export async function createAdmin(_: FormStateCreateAdmin, formData: FormData): Promise<FormStateCreateAdmin> {
     const csrfToken = formData.get('csrfToken') as string;
@@ -66,16 +67,13 @@ export async function createAdmin(_: FormStateCreateAdmin, formData: FormData): 
         }
 
         const sessionVersion = await userRepository.incrementSessionVersion(user.id);
-        
-        await createSession(user.id, user.role, sessionVersion);
-        await regenerateCsrfToken();
 
-        return {
-            message: true,
-            info: 'Conta criada com sucesso! Redirecionando para o Painel de Controle, aguarde...'
-        };
+        await createSession(user.id, user.role, sessionVersion);
     } catch (error) {
         console.error(error);
         return { warning: 'Algo deu errado. Por favor, tente novamente mais tarde.' };
     }
+
+    await regenerateCsrfToken();
+    redirect('/dashboard');
 }

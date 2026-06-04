@@ -1,7 +1,7 @@
 'use client';
 
 import { LoaderCircle } from 'lucide-react';
-import { ChangeEvent, FormEvent, startTransition, useActionState, useState } from 'react';
+import { ChangeEvent, startTransition, SubmitEvent, useActionState, useState } from 'react';
 import { InputError } from '@/_components/input-error';
 import { TextLink } from '@/_components/text-link';
 import { Button } from '@/_components/ui/button';
@@ -18,7 +18,7 @@ export default function ForgotPasswordClient({ csrfToken }: csrfTokenProps) {
         const { id, value } = e.target;
         setData({ ...data, [id]: value });
     };
-    const submit = async (e: FormEvent<HTMLFormElement>) => {
+    const submit = async (e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         if (csrfToken) formData.append('csrfToken', csrfToken);
@@ -27,13 +27,11 @@ export default function ForgotPasswordClient({ csrfToken }: csrfTokenProps) {
     return (
         <div className="space-y-6 w-full 2xl:w-2/4">
             <div className="flex flex-col items-center gap-2 text-center mx-auto">
-                <h1 className="text-xl font-medium">Forgot your password?</h1>
-                <p className="text-muted-foreground text-sm text-balance">
-                    Enter your email to receive a link to reset your password.
-                </p>
+                <h1 className="text-xl font-medium">Esqueceu sua senha?</h1>
+                <p className="text-muted-foreground text-sm text-balance">Insira seu e-mail para receber um link para redefinir sua senha.</p>
             </div>
-            {state?.message && <div className="mb-4 text-center text-sm font-medium text-blue-600">{state.message}</div>}
-            {state?.error && <div className="mb-4 text-center text-sm font-medium text-red-600">{state.error}</div>}
+            {state?.message && <p className="mb-4 text-center text-sm font-medium text-blue-600">{state.message}</p>}
+            {state?.error && <p className="mb-4 text-center text-sm font-medium text-red-600">{state.error}</p>}
 
             <div className="space-y-6">
                 <form
@@ -41,7 +39,7 @@ export default function ForgotPasswordClient({ csrfToken }: csrfTokenProps) {
                     className="w-full max-w-xs flex flex-col gap-6 mx-auto"
                 >
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Email address</Label>
+                        <Label htmlFor="email">Endereço de email</Label>
                         <Input
                             id="email"
                             type="email"
@@ -50,7 +48,7 @@ export default function ForgotPasswordClient({ csrfToken }: csrfTokenProps) {
                             value={data.email}
                             autoFocus
                             onChange={handleChange}
-                            placeholder="email@exemple.com"
+                            placeholder="email@exemplo.com"
                             required
                         />
                         {state?.errors?.email?.[0] && <InputError message={state.errors.email[0]} />}
@@ -63,14 +61,14 @@ export default function ForgotPasswordClient({ csrfToken }: csrfTokenProps) {
                             className="w-full"
                         >
                             {pending && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                            Link to reset email password
+                            Link para redefinir a senha do e-mail
                         </Button>
                     </div>
                 </form>
 
                 <div className="text-muted-foreground space-x-1 text-center text-sm">
-                    <span>Or, go back to</span>
-                    <TextLink href="/login">Log in</TextLink>
+                    <span>Ou, volte para</span>
+                    <TextLink href="/login">Conecte-se</TextLink>
                 </div>
             </div>
         </div>

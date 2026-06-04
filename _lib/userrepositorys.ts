@@ -17,6 +17,7 @@ function buildSetClause(data: Record<string, unknown>, allowed: ReadonlySet<stri
 }
 
 const USER_PUBLIC_COLUMNS = ` id, name, email, role, avatar, email_verified, deleted_at, created_at, updated_at `;
+const USER_PUBLIC_ACTIVE_COLUMNS = ` id, name, email, role, avatar, email_verified, created_at, updated_at `;
 const USER_ACTIVE_COLUMNS = ` id, name, email, role, avatar, family_id, family_name, email_verified, created_at, updated_at `;
 
 export const userRepository = {
@@ -74,7 +75,7 @@ export const userRepository = {
     async findByEmail(email: string, client?: QueryExecutor) {
         const executor = client ?? pool;
         const result = await executor.query<UserPublic>(`
-            SELECT ${USER_PUBLIC_COLUMNS}
+            SELECT ${USER_PUBLIC_ACTIVE_COLUMNS}
             FROM users_public_active
             WHERE email = $1
             LIMIT 1

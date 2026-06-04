@@ -138,8 +138,6 @@ export type FormStateCreateAdmin =
             password_confirmation?: string[];
             avatar?: string[];
         }
-        message?: boolean;
-        info?: string;
         warning?: string;
     } | undefined;
 
@@ -244,4 +242,4 @@ export type HandleImageChangeResult = {
     file: File | null;
     preview: string | null;
     error: string | null;
-};
+}

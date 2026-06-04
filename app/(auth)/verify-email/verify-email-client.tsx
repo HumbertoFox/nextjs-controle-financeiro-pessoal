@@ -1,7 +1,7 @@
 'use client';
 
 import { LoaderCircle } from 'lucide-react';
-import { FormEvent, startTransition, useActionState, useEffect } from 'react';
+import { startTransition, SubmitEvent, useActionState, useEffect } from 'react';
 import { TextLink } from '@/_components/text-link';
 import { Button } from '@/_components/ui/button';
 import { useSearchParams } from 'next/navigation';
@@ -15,7 +15,7 @@ export default function VerifyEmailClient({ csrfToken }: csrfTokenProps) {
     const email = searchParams.get('email');
     const token = searchParams.get('token');
     const [state, action, pending] = useActionState(handleEmailVerification, undefined);
-    const submit = async (e: FormEvent<HTMLFormElement>) => {
+    const submit = async (e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         if (csrfToken) formData.append('csrfToken', csrfToken);
@@ -33,14 +33,12 @@ export default function VerifyEmailClient({ csrfToken }: csrfTokenProps) {
     return (
         <div className="space-y-6 w-full 2xl:w-2/4">
             <div className="flex flex-col items-center gap-2 text-center mx-auto">
-                <h1 className="text-xl font-medium">Check email</h1>
-                <p className="text-muted-foreground text-sm text-balance">
-                    Please verify your email address by clicking the link we just sent you.
-                </p>
+                <h1 className="text-xl font-medium">Verifique seu e-mail</h1>
+                <p className="text-muted-foreground text-sm text-balance">Por favor, verifique seu endereço de e-mail clicando no link que acabamos de lhe enviar.</p>
             </div>
             {state?.status === 'verification-link-sent' && (
                 <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    <p>A new verification link has been sent to the email address you provided during registration.</p>
+                    <p>Um novo link de verificação foi enviado para o endereço de e-mail que você forneceu durante o cadastro.</p>
                 </div>
             )}
             {state?.success && <div className="mb-4 text-center text-sm font-medium text-blue-600">{state.success}</div>}
@@ -52,7 +50,7 @@ export default function VerifyEmailClient({ csrfToken }: csrfTokenProps) {
             >
                 <div className="grid gap-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email">E-mail</Label>
                         <Input
                             id="email"
                             type="email"
@@ -84,14 +82,14 @@ export default function VerifyEmailClient({ csrfToken }: csrfTokenProps) {
                     className="cursor-pointer"
                 >
                     {pending && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                    Resend verification email
+                    Reenviar e-mail de verificação
                 </Button>
 
                 <TextLink
                     href={!state?.status ? "/login" : `/login?status=email%20verified&email=${email}`}
                     className="mx-auto block text-sm"
                 >
-                    Log in
+                    Conecte-se
                 </TextLink>
             </form>
         </div>

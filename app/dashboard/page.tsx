@@ -4,12 +4,10 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const generateMetadata = async (): Promise<Metadata> => {
-    return {
-        title: 'Dashboard'
-    };
+    return { title: 'Painel' };
 }
 
-const breadcrumbItems = [{ text: 'Dashboard' }];
+const breadcrumbItems = [{ text: 'Painel' }];
 
 const cards = [
     { href: "/dashboard/user", color: "border-blue-500", iconColor: "text-blue-500", icon: UserRound },

@@ -5,7 +5,7 @@ import { LoadingLogin } from '@/_components/loadings/loading-login';
 import { getCsrfToken } from '@/_lib/csrf';
 
 export const generateMetadata = async (): Promise<Metadata> => {
-    return { title: 'Log in' };
+    return { title: 'Conecte-se' };
 }
 
 export default async function LoginPage() {

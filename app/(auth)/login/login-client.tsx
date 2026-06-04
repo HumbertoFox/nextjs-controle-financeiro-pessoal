@@ -1,7 +1,7 @@
 'use client';
 
 import { Eye, EyeClosed, LoaderCircle } from 'lucide-react';
-import { startTransition, useActionState, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, startTransition, SubmitEvent, useActionState, useEffect, useRef, useState } from 'react';
 import { InputError } from '@/_components/input-error';
 import { TextLink } from '@/_components/text-link';
 import { Button } from '@/_components/ui/button';
@@ -26,11 +26,11 @@ export function LoginClient({ csrfToken }: csrfTokenProps) {
     const [data, setData] = useState<LoginFormProps>({ email: emailFromParams, password: '' });
 
     const togglePasswordVisibility = () => setIsVisibledPassword(!isVisibledPassword);
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
         setData({ ...data, [id]: value });
     };
-    const submit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+    const submit = async (e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         if (csrfToken) formData.append('csrfToken', csrfToken);

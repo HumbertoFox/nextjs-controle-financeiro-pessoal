@@ -1,7 +1,7 @@
 'use client';
 
 import { Eye, EyeClosed, LoaderCircle } from 'lucide-react';
-import { startTransition, useActionState, useEffect, useState } from 'react';
+import { ChangeEvent, startTransition, SubmitEvent, useActionState, useEffect, useState } from 'react';
 import { InputError } from '@/_components/input-error';
 import { Button } from '@/_components/ui/button';
 import { Input } from '@/_components/ui/input';
@@ -19,13 +19,13 @@ export default function ResetPasswordClient({ csrfToken }: csrfTokenProps) {
     const [showPasswordConfirm, setShowPasswordConfirm] = useState<boolean>(false);
     const [data, setData] = useState<ResetPasswordForm>({ token: searchParams.get('token') ?? '', password: '', password_confirmation: '' });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
         setData({ ...data, [id]: value });
     };
     const toggleShowPassword = () => setShowPassword(!showPassword);
     const toggleShowPasswordConfirm = () => setShowPasswordConfirm(!showPasswordConfirm);
-    const submit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const submit = async (e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         if (csrfToken) formData.append('csrfToken', csrfToken);
@@ -41,9 +41,9 @@ export default function ResetPasswordClient({ csrfToken }: csrfTokenProps) {
     return (
         <div className="space-y-6 w-full 2xl:w-2/4">
             <div className="flex flex-col items-center gap-2 text-center mx-auto">
-                <h1 className="text-xl font-medium">Reset password</h1>
+                <h1 className="text-xl font-medium">Redefinir senha</h1>
                 <p className="text-muted-foreground text-sm text-balance">
-                    Please enter your new password below.
+                    Por favor, insira sua nova senha abaixo.
                 </p>
             </div>
             <form
@@ -67,7 +67,7 @@ export default function ResetPasswordClient({ csrfToken }: csrfTokenProps) {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password">Senha</Label>
                         <div className="relative">
                             <Input
                                 id="password"
@@ -79,12 +79,12 @@ export default function ResetPasswordClient({ csrfToken }: csrfTokenProps) {
                                 className="block w-full"
                                 autoFocus
                                 onChange={handleChange}
-                                placeholder="Password"
+                                placeholder="Senha"
                                 required
                             />
                             <button
                                 type="button"
-                                title={showPassword ? "Hide password" : "Show password"}
+                                title={showPassword ? "Ocultar senha" : "Mostrar senha"}
                                 onClick={toggleShowPassword}
                                 className="btn-icon-toggle"
                             >
@@ -96,7 +96,7 @@ export default function ResetPasswordClient({ csrfToken }: csrfTokenProps) {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="password_confirmation">Confirm your password.</Label>
+                        <Label htmlFor="password_confirmation">Confirme sua senha.</Label>
                         <div className="relative">
                             <Input
                                 id="password_confirmation"
@@ -106,13 +106,13 @@ export default function ResetPasswordClient({ csrfToken }: csrfTokenProps) {
                                 tabIndex={3}
                                 value={data.password_confirmation}
                                 onChange={handleChange}
-                                placeholder="Confirm your password"
+                                placeholder="Confirme sua senha"
                                 required
                                 className="block w-full"
                             />
                             <button
                                 type="button"
-                                title={showPasswordConfirm ? "Hide password" : "Show password"}
+                                title={showPasswordConfirm ? "Ocultar senha" : "Mostrar senha"}
                                 onClick={toggleShowPasswordConfirm}
                                 className="btn-icon-toggle"
                             >
@@ -128,7 +128,7 @@ export default function ResetPasswordClient({ csrfToken }: csrfTokenProps) {
                         className="mt-4 w-full"
                     >
                         {pending && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Reset password
+                        Redefinir senha
                     </Button>
                 </div>
             </form>
@@ -138,8 +138,8 @@ export default function ResetPasswordClient({ csrfToken }: csrfTokenProps) {
 
             {state?.message && (
                 <div className="text-muted-foreground space-x-1 text-center text-sm">
-                    <span>go back to</span>
-                    <TextLink href="/login">Log in</TextLink>
+                    <span>voltar para</span>
+                    <TextLink href="/login">Conecte-se</TextLink>
                 </div>
             )}
         </div>

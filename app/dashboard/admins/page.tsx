@@ -8,12 +8,12 @@ import { Metadata } from 'next';
 import { AdminActionButtons } from '@/_components/admin-action-buttons';
 
 export const generateMetadata = async (): Promise<Metadata> => {
-    return { title: 'Administrators' };
+    return { title: 'Administradores' };
 }
 
 const breadcrumbItems = [
-    { text: 'Dashboard', href: '/dashboard' },
-    { text: 'Admins' }
+    { text: 'Painel', href: '/dashboard' },
+    { text: 'Administradores' }
 ];
 
 export default async function AdminsPage() {
@@ -28,17 +28,17 @@ export default async function AdminsPage() {
                     <Table className="w-full text-center text-xs">
                         <TableHeader>
                             <TableRow className="cursor-default">
-                                <TableHead className="text-center">No.</TableHead>
-                                <TableHead className="text-center max-lg:hidden">Code.</TableHead>
-                                <TableHead className="text-center max-lg:hidden">Name</TableHead>
+                                <TableHead className="text-center">Núm.</TableHead>
+                                <TableHead className="text-center max-lg:hidden">Cod.</TableHead>
+                                <TableHead className="text-center max-lg:hidden">Nome</TableHead>
                                 <TableHead className="text-center">E-mail</TableHead>
-                                <TableHead className="text-center">Actions</TableHead>
+                                <TableHead className="text-center">Ação</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {admins.length === 0 && (
                                 <TableRow className="text-red-600 cursor-default">
-                                    <TableCell colSpan={5}>There are no other administrators.</TableCell>
+                                    <TableCell colSpan={5}>Não existem outros administradores.</TableCell>
                                 </TableRow>
                             )}
                             {admins.map((admin, index) => (

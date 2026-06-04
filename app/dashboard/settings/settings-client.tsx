@@ -41,7 +41,7 @@ export default function SettingsPageClient({ user, familyMembers }: UserSettings
                     </span>
                     <div>
                         <strong>Tipo de conta : </strong>
-                        <span className={`font-pirata ${user.role === 'ADMIN' ? 'text-blue-700' : user.role === 'INDIVIDUAL' ? 'text-orange-700' : 'text-green-700'}`}>
+                        <span className={`font-serif ${user.role === 'ADMIN' ? 'text-blue-700' : user.role === 'INDIVIDUAL' ? 'text-orange-700' : 'text-green-700'}`}>
                             {user.role}
                         </span>
                     </div>
