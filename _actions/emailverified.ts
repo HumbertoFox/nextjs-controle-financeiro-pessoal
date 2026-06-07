@@ -13,29 +13,28 @@ export async function emailVerifiedChecked() {
 
     const email = sessionUser.email;
 
-    const tokenExisting = await verificationTokenRepository.findByIdentifier(email);
-
     const user = await userRepository.findByEmail(email);
-
     if (user?.email_verified) return null;
 
-    if (tokenExisting && new Date() > new Date(tokenExisting.expires_at)) return 'verification-link-sent';
+    const tokenExisting = await verificationTokenRepository.findByIdentifier(email);
 
-    if (!tokenExisting) {
-        const rawToken = crypto.randomBytes(32).toString('hex');
-        const expires_at = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    // Token válido já existe — não reenvia
+    if (tokenExisting && new Date() < new Date(tokenExisting.expires_at)) return 'verification-link-sent';
 
-        await verificationTokenRepository.create({
-            identifier: email,
-            token: hashToken(rawToken),
-            expires_at
-        });
+    // Token expirado — limpa antes de recriar
+    if (tokenExisting) await verificationTokenRepository.deleteByIdentifier(email);
 
-        const verifyLink = `${process.env.NEXT_URL}/verify-email?token=${rawToken}&email=${email}`;
-        await sendEmailVerification(email, verifyLink);
+    // Cria novo token e envia email (token inexistente ou expirado)
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const expires_at = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-        return 'verification-link-sent';
-    }
+    await verificationTokenRepository.create({
+        identifier: email, token: hashToken(rawToken), expires_at,
+    });
+
+    const verifyLink = `${process.env.NEXT_URL}/verify-email?token=${rawToken}&email=${email}`;
+    const verifySessionLink = `${process.env.NEXT_URL}/dashboard/settings/verify-email?token=${rawToken}&email=${email}`;
+    await sendEmailVerification(email, verifyLink, verifySessionLink);
 
     return 'verification-link-sent';
 }

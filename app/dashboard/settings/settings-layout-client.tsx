@@ -9,6 +9,7 @@ import { SidebarNavItemProps } from '@/_types';
 const sidebarNavItems: SidebarNavItemProps[] = [
     { text: 'Configurações', href: '/dashboard/settings' },
     { text: 'Perfil', href: '/dashboard/settings/profile' },
+    { text: 'Verificar e-mail', href: '/dashboard/settings/verify-email' },
     { text: 'Família', href: '/dashboard/settings/family' },
     { text: 'Senha', href: '/dashboard/settings/password' },
     { text: 'Aparência', href: '/dashboard/settings/appearance' }

@@ -43,9 +43,7 @@ export async function handleEmailVerification(_: FormStateEmailVerification | un
         }
 
         await verificationTokenRepository.create({
-            identifier: email,
-            token: hashToken(newRawToken),
-            expires_at
+            identifier: email, token: hashToken(newRawToken), expires_at
         });
 
         return { status: 'verification-link-sent' };

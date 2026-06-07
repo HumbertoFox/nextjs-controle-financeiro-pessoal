@@ -25,5 +25,5 @@ COMMENT ON TABLE verification_tokens IS 'Tokens temporários de verificação de
 -- COLUMN COMMENTS
 -- ============================================================================
 COMMENT ON COLUMN verification_tokens.identifier IS 'Identificador do usuário, geralmente email (case-insensitive)';
-COMMENT ON COLUMN verification_tokens.token IS 'Token único de verificação (recomendado armazenar hash, não plaintext)';
+COMMENT ON COLUMN verification_tokens.token      IS 'Token único de verificação (recomendado armazenar hash, não plaintext)';
 COMMENT ON COLUMN verification_tokens.expires_at IS 'Timestamp de expiração - tokens expirados devem ser deletados';

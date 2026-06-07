@@ -27,7 +27,7 @@ export const sendPasswordResetEmail = async (to: string, resetLink: string) => {
     };
 }
 
-export const sendEmailVerification = async (to: string, link: string) => {
+export const sendEmailVerification = async (to: string, link: string, linkSession?: string) => {
     try {
         const result = await transporter.sendMail({
             from: `'nextjs-starter-kit' <${SMTP_USER}>`,
@@ -37,6 +37,8 @@ export const sendEmailVerification = async (to: string, link: string) => {
                 <h2>Email confirmation</h2>
                 <p>Click the link below to confirm your email:</p>
                 <a href='${link}'>${link}</a>
+                <p>Click the link below to confirm your email (System Open):</p>
+                <a href='${linkSession}'>${linkSession}</a>
                 <p>If you did not request this, you can ignore this email.</p>
             `,
         });

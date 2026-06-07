@@ -9,19 +9,26 @@ import { Input } from '@/_components/ui/input';
 import { Label } from '@/_components/ui/label';
 import { updateUser } from '@/_actions/updateuser';
 import { emailVerifiedChecked } from '@/_actions/emailverified';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { handleImageChange } from '@/_lib/handleimagechange';
 import { ProfileForm, ProfileFormClientProps } from '@/_types';
 
+const providers: Record<string, { name: string; url: string }> = {
+    'gmail.com': { name: 'Gmail', url: 'https://mail.google.com' },
+    'outlook.com': { name: 'Outlook', url: 'https://mail.live.com' },
+    'hotmail.com': { name: 'Hotmail', url: 'https://mail.live.com' },
+    'live.com': { name: 'Outlook', url: 'https://mail.live.com' },
+};
+
 export function ProfilePageClient({ name, email, avatar, mustVerifyEmail, csrfToken }: ProfileFormClientProps) {
-    const router = useRouter();
+    const domain = email?.split('@')[1];
     const [state, action, pending] = useActionState(updateUser, undefined);
     const [imagePreview, setImagePreview] = useState<string | null | undefined>(avatar);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imageError, setImageError] = useState<string | null>(null);
     const [status, setStatus] = useState<string | null>(null);
     const [recentlySuccessful, setRecentlySuccessful] = useState<boolean>(false);
+    const provider = domain ? providers[domain] : null;
     const [data, setData] = useState<ProfileForm>({ name: name, email: email, avatar: avatar });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,9 +57,6 @@ export function ProfilePageClient({ name, email, avatar, mustVerifyEmail, csrfTo
     const handleVerifildEmail = async () => {
         const result = await emailVerifiedChecked();
         setStatus(result);
-        if (result === 'verification-link-sent') {
-            setTimeout(() => router.push('/logout'), 3000);
-        }
     };
     useEffect(() => {
         if (!state?.success) return;
@@ -126,6 +130,23 @@ export function ProfilePageClient({ name, email, avatar, mustVerifyEmail, csrfTo
                                     )}
                                 </div>
                             )}
+                            {provider && (
+                                <div className="flex">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        asChild
+                                    >
+                                        <a
+                                            href={provider.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            Abrir {provider.name}
+                                        </a>
+                                    </Button>
+                                </div>
+                            )}
                         </div>
 
                         <div className="grid gap-2">
@@ -192,9 +213,7 @@ export function ProfilePageClient({ name, email, avatar, mustVerifyEmail, csrfTo
                 </form>
             </div>
 
-            <DeleteUser
-                csrfToken={csrfToken}
-            />
+            <DeleteUser csrfToken={csrfToken} />
         </>
     );
 }

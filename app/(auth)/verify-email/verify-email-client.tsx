@@ -78,7 +78,7 @@ export default function VerifyEmailClient({ csrfToken }: csrfTokenProps) {
                 <Button
                     type="submit"
                     variant="secondary"
-                    disabled={pending || state?.status === 'verification-email-sent' || Boolean(state?.error)}
+                    disabled={pending || state?.status === 'verification-link-sent' || Boolean(state?.error)}
                     className="cursor-pointer"
                 >
                     {pending && <LoaderCircle className="h-4 w-4 animate-spin" />}
@@ -89,7 +89,7 @@ export default function VerifyEmailClient({ csrfToken }: csrfTokenProps) {
                     href={!state?.status ? "/login" : `/login?status=email%20verified&email=${email}`}
                     className="mx-auto block text-sm"
                 >
-                    Conecte-se
+                    {!state?.status ? 'Conecte-se' : 'Continuar para iniciar sessão'}
                 </TextLink>
             </form>
         </div>
