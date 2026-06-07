@@ -1,5 +1,5 @@
 import pool, { QueryExecutor } from '@/_lib/db';
-import { User, UserAdminPublic, UserDetailsProps, UserPublic, UserRole } from '@/_types';
+import { User, UserAdminPublic, UserDetailsProps, UserPublic, UserRole, UsersPagination } from '@/_types';
 
 const ALLOWED_UPDATE_COLUMNS_USER: ReadonlySet<string> = new Set(['name', 'email', 'avatar']);
 
@@ -170,21 +170,31 @@ export const userRepository = {
     },
 
     // -------------------------------------------------------------------------
-    // Busca paginada de usuários com role INDIVIDUAL
+    // Busca paginada de usuários não administradores
     // -------------------------------------------------------------------------
     async findUsersPaginated(page: number, pageSize: number, client?: QueryExecutor) {
         const executor = client ?? pool;
         const offset = (page - 1) * pageSize;
 
-        const usersResult = await executor.query<UserAdminPublic>(`
+        const usersResult = await executor.query<UsersPagination>(`
             SELECT
-                id,
-                name,
-                email,
-                deleted_at
-            FROM users_public
-            WHERE role = 'INDIVIDUAL'
-            ORDER BY created_at
+                u.id,
+                u.name,
+                u.email,
+                u.family_name,
+                u.deleted_at,
+                CASE
+                    WHEN u.family_id IS NOT NULL THEN (
+                        SELECT COUNT(*)
+                        FROM users u2
+                        WHERE u2.family_id = u.family_id
+                          AND u2.deleted_at IS NULL
+                    )
+                    ELSE NULL
+                END AS family_member_count
+            FROM users_all u
+            WHERE u.role IN ('INDIVIDUAL', 'MEMBER')
+            ORDER BY u.created_at
             LIMIT $1
             OFFSET $2
         `,
@@ -193,8 +203,8 @@ export const userRepository = {
 
         const countResult = await executor.query<{ count: string }>(`
             SELECT COUNT(*)
-            FROM users_public
-            WHERE role = 'INDIVIDUAL'
+            FROM users_all
+            WHERE role IN ('INDIVIDUAL', 'MEMBER')
         `);
 
         return [

@@ -68,6 +68,39 @@ WHERE u.deleted_at IS NULL;
 COMMENT ON VIEW users_active IS 'View de usuários ativos incluindo password e nome da família para MEMBERs (uso interno apenas)';
 
 -- ============================================================================
+-- VIEW: users_all
+-- Description: Todos os usuários (ativos e deletados) com indicação de deleted_at
+-- Security: INCLUI password - usar apenas internamente/backend
+-- Use case: Auditoria, administração e relatórios
+-- ============================================================================
+CREATE OR REPLACE VIEW users_all WITH (security_barrier = true) AS
+SELECT
+    u.id,
+    u.name,
+    u.email,
+    u.password,
+    u.session_version,
+    u.role,
+    u.family_id,
+    u.avatar,
+    u.email_verified,
+    u.created_at,
+    u.updated_at,
+    u.deleted_at,
+    (u.deleted_at IS NOT NULL) AS is_deleted,
+    CASE
+        WHEN u.role = 'MEMBER' THEN f.name
+        ELSE NULL
+    END AS family_name
+FROM users u
+LEFT JOIN familys f
+    ON f.id = u.family_id
+    AND f.deleted_at IS NULL;
+
+COMMENT ON VIEW users_all IS
+'View de todos os usuários (ativos e deletados), incluindo password, deleted_at e nome da família para MEMBERs.';
+
+-- ============================================================================
 -- VIEW: users_public_active
 -- Description: Apenas usuários ativos sem dados sensíveis
 -- Security: Exclui password e deleted_at

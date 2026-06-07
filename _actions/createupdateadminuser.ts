@@ -11,6 +11,9 @@ import { getUser } from '@/_lib/dal';
 import { regenerateCsrfToken, validateCsrfToken } from '@/_lib/csrf';
 import { MAX_DIMENSION, MAX_FILE_SIZE, MIME_TO_EXT } from '@/_types';
 import { redirect } from 'next/navigation';
+import { familyRepository } from '@/_lib/familyrepository';
+import { rawPool } from '@/_lib/db';
+import { formatBrazilianName } from '@/_lib/useful';
 
 export async function createUpdateAdminUser(_: FormStateCreateUpdateAdminUser, formData: FormData): Promise<FormStateCreateUpdateAdminUser> {
     const sessionUser = await getUser();
@@ -26,8 +29,9 @@ export async function createUpdateAdminUser(_: FormStateCreateUpdateAdminUser, f
     const validatedFields = schema.safeParse({
         name: formData.get('name') as string,
         email: formData.get('email') as string,
-        password: formData.get('password') as string,
+        family_name: (formData.get('family_name') as string) || undefined,
         role: formData.get('role') as string,
+        password: formData.get('password') as string,
         password_confirmation: formData.get('password_confirmation') as string,
     });
 
@@ -51,6 +55,7 @@ export async function createUpdateAdminUser(_: FormStateCreateUpdateAdminUser, f
     const {
         name,
         email,
+        family_name,
         password,
         role,
     } = validatedFields.data;
@@ -119,8 +124,23 @@ export async function createUpdateAdminUser(_: FormStateCreateUpdateAdminUser, f
             if (!hashedPassword) return { errors: { password: ['A senha deve ter pelo menos 8 caracteres.'] } };
 
             const newUser = await userRepository.create({
-                name, email, password: hashedPassword, role,
+                name: formatBrazilianName(name), email, password: hashedPassword, role,
             });
+
+            if (role === 'MEMBER' && family_name) {
+                const client = await rawPool.connect();
+                try {
+                    await client.query('BEGIN');
+                    const family = await familyRepository.create({ name: formatBrazilianName(family_name) }, client);
+                    await familyRepository.assignUser(newUser.id, family.id, client);
+                    await client.query('COMMIT');
+                } catch (e) {
+                    await client.query('ROLLBACK');
+                    throw e;
+                } finally {
+                    client.release();
+                }
+            }
 
             if (file && file.size > 0) {
                 const imageUrl = await uploadAvatar(newUser.id);

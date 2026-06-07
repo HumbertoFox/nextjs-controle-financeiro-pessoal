@@ -21,7 +21,7 @@ export default function RegisterUpdateUserForm({ user, isEdit, titleForm, valueB
     const [imageError, setImageError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [showPasswordConfirm, setShowPasswordConfirm] = useState<boolean>(false);
-    const [data, setData] = useState<UserFormProps>({ id: user?.id ?? '', name: user?.name ?? '', email: user?.email ?? '', role: user?.role ?? 'INDIVIDUAL', password: '', password_confirmation: '', avatar: user?.avatar ?? undefined });
+    const [data, setData] = useState<UserFormProps>({ id: user?.id ?? '', name: user?.name ?? '', email: user?.email ?? '', family_name: user?.family_name ?? '', role: user?.role ?? 'INDIVIDUAL', password: '', password_confirmation: '', avatar: user?.avatar ?? undefined });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
@@ -218,7 +218,7 @@ export default function RegisterUpdateUserForm({ user, isEdit, titleForm, valueB
                             required
                             value={data.role}
                             onValueChange={(value: UserRole) => setData((prev) => ({ ...prev, role: value }))}
-                            disabled={pending}
+                            disabled={pending || isEdit}
                         >
                             <SelectTrigger
                                 id="role"
@@ -244,9 +244,30 @@ export default function RegisterUpdateUserForm({ user, isEdit, titleForm, valueB
                         value={data.role}
                     />
 
+                    {data.role === 'MEMBER' && (
+                        <div className="grid gap-2">
+                            <Label htmlFor="family_name">Family name</Label>
+                            <Input
+                                id="family_name"
+                                name="family_name"
+                                type="text"
+                                readOnly={isEdit}
+                                required={isEdit}
+                                tabIndex={7}
+                                autoComplete="off"
+                                value={data.family_name ?? ''}
+                                onChange={handleChange}
+                                disabled={pending}
+                                placeholder="Family name"
+                                className={isEdit ? 'cursor-no-drop' : ''}
+                            />
+                            {state?.errors?.family_name?.[0] && <InputError message={state.errors.family_name[0]} />}
+                        </div>
+                    )}
+
                     <Button
                         type="submit"
-                        tabIndex={6}
+                        tabIndex={8}
                         disabled={pending || Boolean(imageError)}
                         aria-busy={pending || Boolean(imageError)}
                         className="mt-2 w-full"

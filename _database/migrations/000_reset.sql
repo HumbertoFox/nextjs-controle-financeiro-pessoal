@@ -80,6 +80,7 @@ DROP VIEW IF EXISTS transactions_detailed   CASCADE;
 DROP VIEW IF EXISTS accounts_active         CASCADE;
 DROP VIEW IF EXISTS users_public_active     CASCADE;
 DROP VIEW IF EXISTS users_active            CASCADE;
+DROP VIEW IF EXISTS users_all               CASCADE;
 DROP VIEW IF EXISTS users_public            CASCADE;
 DROP VIEW IF EXISTS users_admin_public      CASCADE;
 

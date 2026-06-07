@@ -43,6 +43,7 @@ export type UserSettingsClientProps = {
 export type ProfileForm = {
     readonly name: string;
     readonly email: string;
+    readonly family_name?: string | null;
     readonly avatar?: string | null;
 }
 
@@ -167,6 +168,16 @@ export type UserPublic = {
 }
 
 export type UserAdminPublic = UserPublic & {
+    readonly deleted_at?: string | null;
+}
+
+export type UsersPagination = {
+    readonly id: string;
+    readonly name: string;
+    readonly email: string;
+    readonly family_name?: string | null;
+    readonly family_member_count?: number | null;
+    readonly role: UserRole;
     readonly deleted_at?: string | null;
 }
 

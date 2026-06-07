@@ -41,6 +41,8 @@ export default async function UsersPage(props: {
                                 <TableHead className="text-center">Núm.</TableHead>
                                 <TableHead className="text-center max-lg:hidden">Cod.</TableHead>
                                 <TableHead className="text-center max-lg:hidden">Nome</TableHead>
+                                <TableHead className="text-center max-lg:hidden">Família</TableHead>
+                                <TableHead className="text-center max-lg:hidden">Membros</TableHead>
                                 <TableHead className="text-center">E-mail</TableHead>
                                 <TableHead className="text-center">Ação</TableHead>
                             </TableRow>
@@ -48,14 +50,16 @@ export default async function UsersPage(props: {
                         <TableBody>
                             {users.length === 0 && (
                                 <TableRow className="text-red-600 cursor-default">
-                                    <TableCell colSpan={5}>Não há usuários registrados.</TableCell>
+                                    <TableCell colSpan={7}>Não há usuários registrados.</TableCell>
                                 </TableRow>
                             )}
                             {users.map((user, index) => (
                                 <TableRow key={user.id} className="cursor-default">
                                     <TableCell>{(currentPage - 1) * 10 + index + 1}</TableCell>
-                                    <TableCell className="max-lg:hidden">{user.id}</TableCell>
+                                    <TableCell className="max-lg:hidden">{user.id.slice(2, 11)}</TableCell>
                                     <TableCell className="max-lg:hidden">{user.name}</TableCell>
+                                    <TableCell>{user.family_name ?? '—'}</TableCell>
+                                    <TableCell className="max-lg:hidden">{user.family_member_count ?? '—'}</TableCell>
                                     <TableCell>{user.email}</TableCell>
                                     <TableCell className="flex justify-evenly items-center my-1">
                                         <UserActionButtons

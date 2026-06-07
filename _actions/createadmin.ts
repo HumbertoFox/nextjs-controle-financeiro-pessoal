@@ -10,6 +10,7 @@ import { userRepository } from '@/_lib/userrepositorys';
 import { regenerateCsrfToken, validateCsrfToken } from '@/_lib/csrf';
 import { MAX_DIMENSION, MAX_FILE_SIZE, MIME_TO_EXT, UserRole } from '@/_types';
 import { redirect } from 'next/navigation';
+import { formatBrazilianName } from '@/_lib/useful';
 
 export async function createAdmin(_: FormStateCreateAdmin, formData: FormData): Promise<FormStateCreateAdmin> {
     const csrfToken = formData.get('csrfToken') as string;
@@ -54,7 +55,7 @@ export async function createAdmin(_: FormStateCreateAdmin, formData: FormData): 
         }
 
         const user = await userRepository.create({
-            name, email, password: hashedPassword, role
+            name: formatBrazilianName(name), email, password: hashedPassword, role
         });
 
         if (file && file.size > 0) {

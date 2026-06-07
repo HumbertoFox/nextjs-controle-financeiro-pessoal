@@ -3,6 +3,7 @@
 import { rawPool } from '@/_lib/db';
 import { createFamilySchema, FormStateCreateFamily } from '@/_lib/definitions';
 import { familyRepository } from '@/_lib/familyrepository';
+import { formatBrazilianName } from '@/_lib/useful';
 import { userRepository } from '@/_lib/userrepositorys';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
@@ -26,7 +27,7 @@ export async function createFamily(_: FormStateCreateFamily, formData: FormData)
         const client = await rawPool.connect();
         try {
             await client.query('BEGIN');
-            const family = await familyRepository.create({ name: data.name }, client);
+            const family = await familyRepository.create({ name: formatBrazilianName(data.name) }, client);
             await familyRepository.assignUser(userId, family.id, client);
             await client.query('COMMIT');
         } catch (e) {

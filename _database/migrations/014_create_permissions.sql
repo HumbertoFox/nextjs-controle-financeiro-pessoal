@@ -26,6 +26,7 @@ GRANT USAGE ON SCHEMA public TO __ROLE_NAME__;
 -- ============================================================================
 REVOKE ALL ON users               FROM PUBLIC;
 REVOKE ALL ON users_active        FROM PUBLIC;
+REVOKE ALL ON users_all           FROM PUBLIC;
 REVOKE ALL ON familys             FROM PUBLIC;
 REVOKE ALL ON accounts            FROM PUBLIC;
 REVOKE ALL ON categories          FROM PUBLIC;
@@ -60,6 +61,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON rate_limits         TO __ROLE_NAME__;
 -- ============================================================================
 GRANT SELECT ON users_active            TO __ROLE_NAME__;
 GRANT SELECT ON accounts_active         TO __ROLE_NAME__;
+GRANT SELECT ON users_all               TO __ROLE_NAME__;
 GRANT SELECT ON transactions_detailed   TO __ROLE_NAME__;
 GRANT SELECT ON budgets_with_spent      TO __ROLE_NAME__;
 

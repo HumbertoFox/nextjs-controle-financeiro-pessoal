@@ -37,6 +37,10 @@ export function getSignUpUpdateSchema(formData: FormData) {
             .trim()
             .toLowerCase()
             .max(254, 'Email must be at most 254 characters long.'),
+        family_name: z.string()
+            .min(4, 'Nome deve ter ao menos 4 caracteres.')
+            .max(20, 'Family name must be at most 20 characters long.')
+            .optional(),
         password: isEdit
             ? z.string().max(72, 'The password must be at most 72 characters long.').optional()
             : passwordSchema,
@@ -55,13 +59,20 @@ export function getSignUpUpdateSchema(formData: FormData) {
                     message: "The passwords don't match.",
                 });
             }
+            if (data.role === 'MEMBER' && !data.family_name?.trim()) {
+                ctx.addIssue({
+                    path: ['family_name'],
+                    code: 'custom',
+                    message: 'Family name is required for MEMBER accounts.',
+                });
+            }
         });
 }
 
 export const createFamilySchema = z.object({
     name: z.string()
         .min(4, 'Nome deve ter ao menos 4 caracteres.')
-        .max(60),
+        .max(20, 'Family name must be at most 20 characters long.'),
 })
 
 export const inviteMemberSchema = z.object({
@@ -146,6 +157,7 @@ export type FormStateCreateUpdateAdminUser =
         errors?: {
             name?: string[];
             email?: string[];
+            family_name?: string[];
             role?: string[];
             password?: string[];
             password_confirmation?: string[];

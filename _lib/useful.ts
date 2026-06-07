@@ -12,3 +12,21 @@ export function formatDate(
     });
 }
 
+const SMALL_WORDS = new Set([
+    'da', 'de', 'do', 'dos', 'das', 'e', 'em', 'na', 'no', 'nas', 'nos'
+]);
+
+export function formatBrazilianName(value: string) {
+    return value
+        .trim()
+        .toLowerCase()
+        .split(/\s+/)
+        .map((word, index) => {
+            if (index !== 0 && SMALL_WORDS.has(word)) {
+                return word; // mantém minúsculo
+            }
+
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        })
+        .join(' ');
+}
