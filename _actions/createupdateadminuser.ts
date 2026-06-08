@@ -17,11 +17,11 @@ import { formatBrazilianName } from '@/_lib/useful';
 
 export async function createUpdateAdminUser(_: FormStateCreateUpdateAdminUser, formData: FormData): Promise<FormStateCreateUpdateAdminUser> {
     const sessionUser = await getUser();
-    if (!sessionUser || sessionUser.role !== 'ADMIN') return { warning: 'Token de segurança inválido. Atualize a página e tente novamente.' };
+    if (!sessionUser) return { warning: 'Você precisa estar autenticado.' };
+    if (sessionUser.role !== 'ADMIN') return { warning: 'Você não tem permissão para realizar esta ação.' };
 
     const csrfToken = formData.get('csrfToken') as string;
     const isValidCsrf = await validateCsrfToken(csrfToken);
-
     if (!isValidCsrf) return { warning: 'Token de segurança inválido. Atualize a página e tente novamente.' };
 
     const schema = getSignUpUpdateSchema(formData);

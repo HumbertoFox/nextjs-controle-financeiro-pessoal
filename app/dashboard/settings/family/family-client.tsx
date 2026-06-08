@@ -5,7 +5,7 @@ import CreateFamilyForm from './form-register-family';
 import InviteMemberForm from './form-invite-member';
 import { Button } from '@/_components/ui/button';
 
-export default function FamilyPageClient({ user, familyMembers }: UserSettingsClientProps) {
+export default function FamilyPageClient({ user, csrfToken, familyMembers }: UserSettingsClientProps) {
     const getInitials = useInitials();
 
     // INDIVIDUAL sem família — mostra formulário de criação
@@ -17,7 +17,10 @@ export default function FamilyPageClient({ user, familyMembers }: UserSettingsCl
                         <h2 className="text-xl font-semibold tracking-tight">Criar Família</h2>
                         <p className="text-muted-foreground text-sm">Crie uma família para compartilhar finanças com outras pessoas.</p>
                     </div>
-                    <CreateFamilyForm userId={user.id} />
+                    <CreateFamilyForm
+                        csrfToken={csrfToken}
+                        userId={user.id}
+                    />
                 </div>
             </>
         );
@@ -33,7 +36,10 @@ export default function FamilyPageClient({ user, familyMembers }: UserSettingsCl
                 </div>
 
                 {/* Convidar membro */}
-                <InviteMemberForm familyId={user.family_id} />
+                <InviteMemberForm
+                    csrfToken={csrfToken}
+                    familyId={user.family_id}
+                />
 
                 {/* Lista de membros */}
                 <div className="flex flex-col gap-3">

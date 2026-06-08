@@ -12,7 +12,7 @@ import { checkLoginRateLimit, resetLoginRateLimit } from '@/_lib/ratelimit';
 export async function loginUser(_: FormStateLoginUser, formData: FormData): Promise<FormStateLoginUser> {
     const csrfToken = formData.get('csrfToken') as string;
     const isValidCsrf = await validateCsrfToken(csrfToken);
-    if (!isValidCsrf) return { warning: 'Invalid security token. Please refresh the page and try again.' };
+    if (!isValidCsrf) return { warning: 'Token de segurança inválido. Atualize a página e tente novamente.' };
 
     const validatedFields = signInSchema.safeParse({
         email: formData.get('email') as string,
@@ -33,21 +33,21 @@ export async function loginUser(_: FormStateLoginUser, formData: FormData): Prom
         const secs = rateLimit.retryAfterSeconds;
         const timeLabel = secs < 60 ? `${secs} second${secs !== 1 ? 's' : ''}` : `${Math.ceil(secs / 60)} minute${Math.ceil(secs / 60) !== 1 ? 's' : ''}`;
 
-        return { warning: `Too many login attempts. Please try again in ${timeLabel}.`, retryAfterSeconds: secs };
+        return { warning: `Muitas tentativas de login. Tente novamente em ${timeLabel}.`, retryAfterSeconds: secs };
     }
 
     try {
         const user = await userRepository.findByEmailActive(email);
 
-        if (!user) return { warning: 'Invalid email or password' };
+        if (!user) return { warning: 'E-mail ou senha inválidos' };
 
         const isPasswordValid = await compare(password, user.password);
 
         if (!isPasswordValid) {
             if (rateLimit.warning === 'will-be-blocked') {
-                return { warning: 'Invalid email or password! Warning: one more failed attempt will block your account for 10 minutes.' };
+                return { warning: 'E-mail ou senha inválidos! Aviso: mais uma tentativa incorreta bloqueará sua conta por 10 minutos.' };
             }
-            return { warning: 'Invalid email or password' };
+            return { warning: 'E-mail ou senha inválidos' };
         }
 
         await resetLoginRateLimit(ip, email);
@@ -59,9 +59,9 @@ export async function loginUser(_: FormStateLoginUser, formData: FormData): Prom
 
         await regenerateCsrfToken();
 
-        return { message: 'Authentication successful! Redirecting to the Dashboard, please wait...' };
+        return { message: 'Autenticação realizada com sucesso! Redirecionando para o Painel de Controle, aguarde...' };
     } catch (error) {
         console.error('Unknown error occurred:', error);
-        return { warning: 'Something went wrong. Please try again later.' };
+        return { warning: 'Algo deu errado. Por favor, tente novamente mais tarde.' };
     };
 }

@@ -6,7 +6,7 @@ import { Input } from '@/_components/ui/input';
 import { Label } from '@/_components/ui/label';
 import { useActionState } from 'react';
 
-export default function CreateFamilyForm({ userId }: { userId: string }) {
+export default function CreateFamilyForm({ csrfToken, userId }: { csrfToken?: string; userId: string }) {
     const [state, action, pending] = useActionState(createFamily, undefined);
 
     return (
@@ -21,7 +21,7 @@ export default function CreateFamilyForm({ userId }: { userId: string }) {
                     id="family-name"
                     name="name"
                     type="text"
-                    placeholder="Ex: Família Silva"
+                    placeholder="Ex: Família Sales"
                 />
                 {state?.errors?.name?.[0] && <InputError message={state.errors.name[0]} />}
             </div>

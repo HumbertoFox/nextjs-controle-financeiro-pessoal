@@ -37,6 +37,7 @@ export type UserProfilePageProps = {
 
 export type UserSettingsClientProps = {
     user: UserDetailsProps;
+    readonly csrfToken?: string;
     readonly familyMembers: Pick<UserDetailsProps, 'id' | 'name' | 'avatar' | 'role'>[];
 }
 
@@ -200,4 +201,22 @@ export type RateLimitEntry = {
 
 export type PasswordChecklistProps = {
     readonly password?: string;
+}
+
+export type InviteMemberFromProps = {
+    readonly csrfToken?: string;
+    readonly familyId: string;
+}
+
+export type InviteAcceptClientProps = {
+    email: string;
+    token: string;
+    csrfToken?: string;
+}
+
+export type InviteAcceptPageProps = {
+    searchParams: Promise<{
+        email?: string;
+        token?: string
+    }>;
 }

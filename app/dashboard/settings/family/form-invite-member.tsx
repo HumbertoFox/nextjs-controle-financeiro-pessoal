@@ -3,20 +3,26 @@
 import { inviteMember } from '@/_actions/invitemember';
 import { InputError } from '@/_components/input-error';
 import { Button } from '@/_components/ui/button';
+import { Input } from '@/_components/ui/input';
+import { Label } from '@/_components/ui/label';
+import { InviteMemberFromProps } from '@/_types';
 import { useActionState } from 'react';
 
-export default function InviteMemberForm({ familyId }: { familyId: string }) {
+export default function InviteMemberForm({ familyId, csrfToken }: InviteMemberFromProps) {
     const [state, action, pending] = useActionState(inviteMember, undefined);
 
     return (
-        <form action={action} className="flex flex-col gap-4 max-w-sm">
+        <form
+            action={action}
+            className="flex flex-col gap-4 max-w-sm">
+            <input type="hidden" name="csrfToken" value={csrfToken} />
             <input type="hidden" name="familyId" value={familyId} />
             <div className="flex flex-col gap-1">
-                <label htmlFor="invite-email" className="text-sm font-medium">
+                <Label htmlFor="invite-email" className="text-sm font-medium">
                     Convidar por email
-                </label>
+                </Label>
                 <div className="flex gap-2">
-                    <input
+                    <Input
                         id="invite-email"
                         name="email"
                         type="email"

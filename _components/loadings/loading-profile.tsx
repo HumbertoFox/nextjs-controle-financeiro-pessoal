@@ -33,7 +33,7 @@ export default function LoadingProfile() {
                 </div>
             </div>
             <Skeleton className="w-16 h-10" />
-            <Skeleton className="w-[544px] h-[132px]" />
+            <Skeleton className="w-136 h-33" />
         </div>
     );
 }

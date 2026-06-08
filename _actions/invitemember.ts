@@ -7,29 +7,39 @@ import { sendFamilyInviteEmail } from '@/_lib/mail';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { verificationTokenRepository } from '@/_lib/verificationtokenrepositorys';
+import { getUser } from '@/_lib/dal';
+import { validateCsrfToken } from '@/_lib/csrf';
 
 export async function inviteMember(_: FormStateInviteMember, formData: FormData): Promise<FormStateInviteMember> {
-    const validated = inviteMemberSchema.safeParse({
-        email: formData.get('email'),
+    const sessionUser = await getUser();
+    if (!sessionUser) return { warning: 'Você precisa estar autenticado para realizar esta ação.' };
+
+    const csrfToken = formData.get('csrfToken') as string;
+    const isValidCsrf = await validateCsrfToken(csrfToken);
+    if (!isValidCsrf) return { warning: 'Token de segurança inválido. Atualize a página e tente novamente.' };
+
+    const validatedFields = inviteMemberSchema.safeParse({
+        email: formData.get('email') as string,
+        familyId: formData.get('familyId') as string,
     });
 
-    if (!validated.success) return { errors: z.flattenError(validated.error).fieldErrors };
+    if (!validatedFields.success) return { errors: z.flattenError(validatedFields.error).fieldErrors };
 
-    const familyId = formData.get('familyId') as string;
+    const data = validatedFields.data;
 
     try {
-        const user = await userRepository.findByEmailActive(validated.data.email);
-        if (!user) return { warning: 'Usuário não encontrado. Apenas usuários cadastrados podem ser convidados.' };
-        if (user.family_id) return { warning: 'Usuário já pertence a uma família.' };
+        const userVerify = await userRepository.findByEmailActive(data.email);
+        if (!userVerify) return { warning: 'Usuário não encontrado. Apenas usuários cadastrados podem ser convidados.' };
+        if (userVerify.family_id) return { warning: 'Usuário já pertence a uma família.' };
 
-        const family = await familyRepository.findById(familyId);
+        const family = await familyRepository.findById(data.familyId);
         if (!family) return { warning: 'Família não encontrada.' };
 
-        const rawToken = await verificationTokenRepository.createInviteToken(validated.data.email, familyId);
+        const rawToken = await verificationTokenRepository.createInviteToken(data.email, data.familyId);
 
-        const inviteLink = `${process.env.NEXT_URL}/invite/accept?email=${encodeURIComponent(validated.data.email)}&token=${rawToken}`;
+        const inviteLink = `${process.env.NEXT_URL}/invite/accept?email=${encodeURIComponent(data.email)}&token=${rawToken}`;
 
-        const mail = await sendFamilyInviteEmail(validated.data.email, family.name, inviteLink);
+        const mail = await sendFamilyInviteEmail(data.email, family.name, inviteLink);
         if (!mail.ok) return { warning: 'Erro ao enviar email de convite. Tente novamente.' };
 
     } catch {

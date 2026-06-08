@@ -24,7 +24,10 @@ export async function reactivateAdminUserById(formData: FormData) {
         case 'ADMIN':
             revalidatePath('/dashboard/admins');
             break;
-        case 'USER':
+        case 'INDIVIDUAL':
+            revalidatePath('/dashboard/users');
+            break;
+        case 'MEMBER':
             revalidatePath('/dashboard/users');
             break;
         default:

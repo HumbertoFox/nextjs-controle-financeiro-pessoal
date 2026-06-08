@@ -76,6 +76,7 @@ export const createFamilySchema = z.object({
 })
 
 export const inviteMemberSchema = z.object({
+    familyId: z.uuid({ error: 'ID de produto inválido' }),
     email: z.email('Invalid email address')
         .trim()
         .toLowerCase()
@@ -244,11 +245,19 @@ export type FormStatePasswordReset =
         warning?: string;
     } | undefined;
 
-export type FormStateEmailVerification = {
-    error?: string;
-    status?: string;
-    success?: string;
-} | undefined;
+export type FormStateEmailVerification =
+    | {
+        error?: string;
+        status?: string;
+        success?: string;
+    } | undefined;
+
+export type FormStateAcceptInvite =
+    | {
+        success?: string;
+        warning?: string;
+        error?: string;
+    } | undefined;
 
 export type HandleImageChangeResult = {
     file: File | null;

@@ -15,7 +15,6 @@ import { formatBrazilianName } from '@/_lib/useful';
 export async function createAdmin(_: FormStateCreateAdmin, formData: FormData): Promise<FormStateCreateAdmin> {
     const csrfToken = formData.get('csrfToken') as string;
     const isValidCsrf = await validateCsrfToken(csrfToken);
-
     if (!isValidCsrf) return { warning: 'Token de segurança inválido. Atualize a página e tente novamente.' };
 
     const validatedFields = createAdminSchema.safeParse({

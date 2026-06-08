@@ -42,7 +42,7 @@ export const userRepository = {
     // -------------------------------------------------------------------------
     async findActiveById(id: string, client?: QueryExecutor) {
         const executor = client ?? pool;
-        const result = await executor.query<UserDetailsProps>(`
+        const result = await executor.query<User>(`
             SELECT *
             FROM users_active
             WHERE id = $1
@@ -58,7 +58,7 @@ export const userRepository = {
     // -------------------------------------------------------------------------
     async findByEmailActive(email: string, client?: QueryExecutor) {
         const executor = client ?? pool;
-        const result = await executor.query<UserDetailsProps>(`
+        const result = await executor.query<User>(`
             SELECT *
             FROM users_active
             WHERE email = $1
