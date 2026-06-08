@@ -19,7 +19,6 @@ export default async function FamilyPage() {
     const familyMembers = user.family_id
         ? await userRepository.findByFamilyId(user.family_id)
         : [];
-
     return (
         <Suspense fallback={<LoadingSettings />}>
             <FamilyPageClient

@@ -16,9 +16,9 @@ function buildSetClause(data: Record<string, unknown>, allowed: ReadonlySet<stri
     return { setClause, values };
 }
 
-const USER_PUBLIC_COLUMNS = ` id, name, email, role, avatar, email_verified, deleted_at, created_at, updated_at `;
-const USER_PUBLIC_ACTIVE_COLUMNS = ` id, name, email, role, avatar, email_verified, created_at, updated_at `;
-const USER_ACTIVE_COLUMNS = ` id, name, email, role, avatar, family_id, family_name, email_verified, created_at, updated_at `;
+const USER_PUBLIC_COLUMNS = ` id, name, email, role, is_owner, avatar, email_verified, deleted_at, created_at, updated_at `;
+const USER_PUBLIC_ACTIVE_COLUMNS = ` id, name, email, role, is_owner, avatar, email_verified, created_at, updated_at `;
+const USER_ACTIVE_COLUMNS = ` id, name, email, role, is_owner, avatar, family_id, family_name, email_verified, created_at, updated_at `;
 
 export const userRepository = {
     // -------------------------------------------------------------------------
@@ -398,5 +398,22 @@ export const userRepository = {
             [id]
         );
         return result.rows[0].session_version;
+    },
+
+    // -------------------------------------------------------------------------
+    // Remove usuário da família e reverte role para INDIVIDUAL
+    // -------------------------------------------------------------------------
+    async removeFromFamily(id: string, client?: QueryExecutor) {
+        const executor = client ?? pool;
+        await executor.query(`
+            UPDATE users
+            SET family_id = NULL,
+                role = 'INDIVIDUAL',
+                is_owner = false,
+                updated_at = now()
+            WHERE id = $1 AND deleted_at IS NULL
+        `,
+            [id]
+        );
     },
 }

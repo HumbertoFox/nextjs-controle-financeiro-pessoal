@@ -26,6 +26,12 @@ CREATE INDEX IF NOT EXISTS idx_users_role
 
 COMMENT ON INDEX idx_users_role IS 'Otimiza queries que filtram usuários por role';
 
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_one_owner_per_family
+    ON users(family_id)
+    WHERE is_owner = true AND deleted_at IS NULL;
+
+COMMENT ON INDEX idx_users_one_owner_per_family IS 'Garante unicidade de dono por família — impede dois is_owner = true na mesma família';
+
 -- ============================================================================
 -- TABLE: accounts
 -- ============================================================================

@@ -21,6 +21,7 @@ export type UserDetailsProps = {
     readonly avatar?: string | null;
     readonly family_id?: string | null;
     readonly family_name?: string | null;
+    readonly is_owner: boolean;
     readonly role: UserRole;
     readonly email_verified?: string | null;
     readonly deleted_at?: string | null;
@@ -162,6 +163,7 @@ export type UserPublic = {
     readonly name: string;
     readonly email: string;
     readonly role: UserRole;
+    readonly is_owner: boolean;
     readonly avatar?: string | null;
     readonly email_verified?: string | null;
     readonly created_at: string;

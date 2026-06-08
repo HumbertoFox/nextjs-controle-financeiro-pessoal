@@ -2,11 +2,12 @@
 
 import { createFamily } from '@/_actions/createfamily';
 import { InputError } from '@/_components/input-error';
+import { Button } from '@/_components/ui/button';
 import { Input } from '@/_components/ui/input';
 import { Label } from '@/_components/ui/label';
 import { useActionState } from 'react';
 
-export default function CreateFamilyForm({ csrfToken, userId }: { csrfToken?: string; userId: string }) {
+export default function CreateFamilyForm({ csrfToken }: { csrfToken?: string; }) {
     const [state, action, pending] = useActionState(createFamily, undefined);
 
     return (
@@ -14,7 +15,7 @@ export default function CreateFamilyForm({ csrfToken, userId }: { csrfToken?: st
             action={action}
             className="space-y-6"
         >
-            <input type="hidden" name="userId" value={userId} />
+            <input type="hidden" name="csrfToken" value={csrfToken} />
             <div className="grid gap-2">
                 <Label htmlFor="family-name">Nome da família</Label>
                 <Input
@@ -27,13 +28,12 @@ export default function CreateFamilyForm({ csrfToken, userId }: { csrfToken?: st
             </div>
             {state?.warning && <p className="text-xs text-orange-500">{state.warning}</p>}
             {state?.message && <p className="text-xs text-green-500">{state.message}</p>}
-            <button
+            <Button
                 type="submit"
                 disabled={pending}
-                className="bg-black text-white rounded px-4 py-2 text-sm disabled:opacity-50"
             >
                 {pending ? 'Criando...' : 'Criar família'}
-            </button>
+            </Button>
         </form>
     );
 }

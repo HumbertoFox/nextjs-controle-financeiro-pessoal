@@ -264,3 +264,9 @@ export type HandleImageChangeResult = {
     preview: string | null;
     error: string | null;
 }
+
+export type FormStateRemoveMember =
+    | {
+        warning?: string;
+        message?: string;
+    } | undefined;

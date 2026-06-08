@@ -131,8 +131,7 @@ export async function createUpdateAdminUser(_: FormStateCreateUpdateAdminUser, f
                 const client = await rawPool.connect();
                 try {
                     await client.query('BEGIN');
-                    const family = await familyRepository.create({ name: formatBrazilianName(family_name) }, client);
-                    await familyRepository.assignUser(newUser.id, family.id, client);
+                    await familyRepository.create({ name: formatBrazilianName(family_name), ownerId: newUser.id }, client);
                     await client.query('COMMIT');
                 } catch (e) {
                     await client.query('ROLLBACK');

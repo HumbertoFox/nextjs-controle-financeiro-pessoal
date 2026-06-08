@@ -4,6 +4,7 @@ import { UserSettingsClientProps } from '@/_types';
 import CreateFamilyForm from './form-register-family';
 import InviteMemberForm from './form-invite-member';
 import { Button } from '@/_components/ui/button';
+import RemoveMemberButton from '@/_components/remove-member-button';
 
 export default function FamilyPageClient({ user, csrfToken, familyMembers }: UserSettingsClientProps) {
     const getInitials = useInitials();
@@ -17,10 +18,7 @@ export default function FamilyPageClient({ user, csrfToken, familyMembers }: Use
                         <h2 className="text-xl font-semibold tracking-tight">Criar Família</h2>
                         <p className="text-muted-foreground text-sm">Crie uma família para compartilhar finanças com outras pessoas.</p>
                     </div>
-                    <CreateFamilyForm
-                        csrfToken={csrfToken}
-                        userId={user.id}
-                    />
+                    <CreateFamilyForm csrfToken={csrfToken} />
                 </div>
             </>
         );
@@ -36,10 +34,12 @@ export default function FamilyPageClient({ user, csrfToken, familyMembers }: Use
                 </div>
 
                 {/* Convidar membro */}
-                <InviteMemberForm
-                    csrfToken={csrfToken}
-                    familyId={user.family_id}
-                />
+                {user.is_owner && (
+                    <InviteMemberForm
+                        csrfToken={csrfToken}
+                        familyId={user.family_id}
+                    />
+                )}
 
                 {/* Lista de membros */}
                 <div className="flex flex-col gap-3">
@@ -66,10 +66,12 @@ export default function FamilyPageClient({ user, csrfToken, familyMembers }: Use
                                 </div>
                             </div>
                             {/* Só mostra remover se não for o próprio usuário */}
-                            {member.id !== user.id && (
-                                <Button variant="destructive">
-                                    Remover
-                                </Button>
+                            {member.id !== user.id && user.is_owner && (
+                                <RemoveMemberButton
+                                    memberId={member.id}
+                                    familyId={user.family_id!}
+                                    csrfToken={csrfToken}
+                                />
                             )}
                         </div>
                     ))}
@@ -77,7 +79,7 @@ export default function FamilyPageClient({ user, csrfToken, familyMembers }: Use
             </div>
 
             {/* Sair da família */}
-            {user.role === 'MEMBER' && (
+            {user.role === 'MEMBER' && !user.is_owner && (
                 <Button
                     variant='destructive'
                     className="mr-auto"
