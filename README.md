@@ -31,7 +31,7 @@
 
 ### Introdução
 
-Aplicação Next.js com autenticação, controle de papéis (`ADMIN`, `USER`) e backend PostgreSQL.
+Aplicação Next.js com autenticação, controle de papéis (`ADMIN`, `INDIVIDUAL`, `MEMBER`) e backend PostgreSQL.
 Suporta login com senha, login mágico e verificação de e-mail.
 
 ---
@@ -145,7 +145,7 @@ npm run db:migrate
 
 - Cria extensões PostgreSQL necessárias (`pgcrypto`, `citext`).
 
-- Cria ENUM `user_role` (`ADMIN`, `USER`).
+- Cria ENUM `user_role` (`ADMIN`, `INDIVIDUAL`, `MEMBER`).
 
 - Cria tabelas `users`, `verification_tokens` e `rate_limits`.
 
@@ -154,6 +154,8 @@ npm run db:migrate
 - Cria função `update_updated_at` e `trigger_update_users_updated_at` para atualizar timestamps automaticamente.
 
 - Cria role `<nome_do_banco>_backend_role` (derivada automaticamente do nome do banco na `DATABASE_URL`), aplica permissões e políticas RLS.
+
+- Cria índices de performance e unicidade (incluindo `idx_users_one_owner_per_family`)
 
 ---
 
@@ -174,7 +176,7 @@ npm run make:migration "Add new Profiles Table"
 - Arquivo gerado:
 
 ```pgsql
-010_20260208124500_add_new_profiles_table.sql
+016_20260208124500_add_new_profiles_table.sql
 ```
 
 **Observações:**
@@ -221,17 +223,29 @@ npm run db:setup
 
 ### Modelo de Dados
 
-**Tabelas principais:** `users`, `verification_tokens`, `rate_limits`
+**Tabelas principais:**
 
-**ENUM:** `user_role` → `ADMIN`, `USER`
+`users`, `familys`, `verification_tokens`, `rate_limits`
 
-**Relação lógica:** `users.email` ↔ `verification_tokens.identifier`
+**ENUM:**
 
-**Trigger:** Atualiza `updated_at` em users automaticamente.
+`user_role` → `ADMIN`, `INDIVIDUAL`, `MEMBER`
 
-**Rate limiting:** Tentativas de login e recuperação de senha são persistidas na tabela `rate_limits` por IP e e-mail, funcionando em múltiplas instâncias.
+**Relações:**
 
-Para detalhes de criação de tabelas, views e triggers, consulte os scripts em `_database/migrations`.
+- `users.family_id` → `familys.id` (ON DELETE SET NULL)
+- `users.email` ↔ `verification_tokens.identifier`
+- `users.is_owner` → identifica o dono da família (único por família via índice parcial)
+
+**Trigger:**
+
+Atualiza `updated_at` em users automaticamente.
+
+**Rate limiting:**
+
+Tentativas de login e recuperação de senha persistidas na tabela `rate_limits` por IP e e-mail, funcionando em múltiplas instâncias sem estado compartilhado em memória.
+
+Para detalhes de criação de `tabelas`, `views` e `triggers`, consulte os scripts em `_database/migrations`.
 
 ---
 
@@ -239,13 +253,33 @@ Para detalhes de criação de tabelas, views e triggers, consulte os scripts em 
 
 - Primeiro usuário registrado → `ADMIN`
 
-- Apenas `ADMINs` podem criar novos usuários
+- Apenas `ADMINs` podem criar novos usuários `ADMINs`
 
-- Login: e-mail + senha ou login mágico
+- Login: e-mail + senha
 
-- Controle de acesso por papéis (`ADMIN`, `USER`)
+- Verificação de e-mail obrigatória com token temporário (expira em 7 dias)
+
+- Reset de senha via token enviado por e-mail
+
+- Sessão única por usuário via `session_version` — logins anteriores são invalidados a cada novo login
 
 - Soft delete de usuários
+
+- Rate limiting por IP e e-mail para login e recuperação de senha
+
+---
+
+### Famílias
+
+- Usuários `INDIVIDUAL` podem criar uma família e se tornam `MEMBER` com `is_owner = true`
+
+- O dono pode convidar outros usuários cadastrados via e-mail (token expira em 24h)
+
+- Apenas o dono pode remover membros
+
+- Membros comuns podem sair da família
+
+- Um único dono por família é garantido por índice único parcial no banco
 
 ---
 
@@ -270,7 +304,7 @@ Para detalhes de criação de tabelas, views e triggers, consulte os scripts em 
 
 - TailwindCSS
 
-- Radix UI
+- Radix UI / shadcn/ui
 
 - Nodemailer
 
