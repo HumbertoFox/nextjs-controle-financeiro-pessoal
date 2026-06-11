@@ -12,21 +12,21 @@ export async function handleEmailVerification(_: FormStateEmailVerification | un
     const csrfToken = formData.get('csrfToken') as string;
     const isValidCsrf = await validateCsrfToken(csrfToken);
 
-    if (!isValidCsrf) return { error: 'Invalid security token. Please refresh the page and try again.' };
+    if (!isValidCsrf) return { error: 'Token de segurança inválido. Atualize a página e tente novamente.' };
 
     const email = formData.get('email') as string;
     const rawToken = formData.get('token') as string;
 
-    if (!email && !rawToken) return { error: 'Not authenticated' };
+    if (!email && !rawToken) return { error: 'Não autenticado' };
 
     const isCheckedUserEmail = await userRepository.findByEmail(email);
 
-    if (isCheckedUserEmail?.email_verified) return { error: 'Email already verified!' };
+    if (isCheckedUserEmail?.email_verified) return { error: 'E-mail já verificado!' };
 
     const hashedToken = hashToken(rawToken);
     const tokenExisting = await verificationTokenRepository.findValidToken(email, hashedToken);
 
-    if (!tokenExisting) return { error: 'Invalid or expired token' };
+    if (!tokenExisting) return { error: 'Token inválido ou expirado' };
 
     if (tokenExisting && new Date() > new Date(tokenExisting.expires_at)) {
         await verificationTokenRepository.delete(email, hashedToken);
@@ -55,5 +55,5 @@ export async function handleEmailVerification(_: FormStateEmailVerification | un
 
     await regenerateCsrfToken();
 
-    return { success: 'Success, email verified.' };
+    return { success: 'Success, E-mail verificado.' };
 }

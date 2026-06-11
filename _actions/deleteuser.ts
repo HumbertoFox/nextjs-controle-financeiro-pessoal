@@ -31,7 +31,7 @@ export async function deleteUser(_: FormStateUserDelete, formData: FormData): Pr
 
     const activeAdmins = await userRepository.countActiveAdmins();
 
-    if (activeAdmins <= 1) return { errors: { password: [`It's not possible to delete an ADMIN account when there's only one active account!`] } };
+    if (activeAdmins <= 1) return { errors: { password: [`Não é possível excluir uma conta de ADMINISTRADOR quando houver apenas uma conta ativa!`] } };
 
     await userRepository.softDeleteById(sessionUser.id);
 

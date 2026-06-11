@@ -11,7 +11,7 @@ import z from 'zod';
 export async function resetPassword(_: FormStatePasswordReset, formData: FormData): Promise<FormStatePasswordReset> {
     const csrfToken = formData.get('csrfToken') as string;
     const isValidCsrf = await validateCsrfToken(csrfToken);
-    if (!isValidCsrf) return { warning: 'Invalid security token. Please refresh the page and try again.' };
+    if (!isValidCsrf) return { warning: 'Token de segurança inválido. Atualize a página e tente novamente.' };
 
     const validatedFields = passwordResetSchema.safeParse({
         token: formData.get('token') as string,
@@ -27,7 +27,7 @@ export async function resetPassword(_: FormStatePasswordReset, formData: FormDat
 
     const tokenRecord = await verificationTokenRepository.findValidTokenOnly(hashedToken);
 
-    if (!tokenRecord) return { warning: 'Invalid or expired token.' };
+    if (!tokenRecord) return { warning: 'Token inválido ou expirado.' };
 
     const email = tokenRecord.identifier;
 
@@ -39,5 +39,5 @@ export async function resetPassword(_: FormStatePasswordReset, formData: FormDat
 
     await regenerateCsrfToken();
 
-    return { message: 'Password reset successfully!' };
+    return { message: 'Senha redefinida com sucesso!' };
 }

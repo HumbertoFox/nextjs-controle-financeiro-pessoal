@@ -13,7 +13,7 @@ import { checkForgotPasswordRateLimit } from '@/_lib/ratelimit';
 export async function forgotPassword(_: FormStatePasswordForgot, formData: FormData): Promise<FormStatePasswordForgot> {
     const csrfToken = formData.get('csrfToken') as string;
     const isValidCsrf = await validateCsrfToken(csrfToken);
-    if (!isValidCsrf) return { error: 'Invalid security token. Please refresh the page and try again.' };
+    if (!isValidCsrf) return { error: 'Token de segurança inválido. Atualize a página e tente novamente.' };
 
     const validatedFields = passwordForgotSchema.safeParse({ email: formData.get('email') as string });
 
@@ -25,13 +25,13 @@ export async function forgotPassword(_: FormStatePasswordForgot, formData: FormD
     if (!rateLimit.allowed) {
         const secs = rateLimit.retryAfterSeconds;
         const timeLabel = secs < 60 ? `${secs} second${secs !== 1 ? 's' : ''}` : `${Math.ceil(secs / 60)} minute${Math.ceil(secs / 60) !== 1 ? 's' : ''}`;
-        return { error: `Too many attempts. Please try again in ${timeLabel}.` };
+        return { error: `Muitas tentativas. Por favor, tente novamente em ${timeLabel}.` };
     }
 
     const user = await userRepository.findByEmail(email);
 
     const genericMessage = {
-        message: 'If your email is registered, you will receive a link to reset your password.'
+        message: 'Se o seu e-mail estiver cadastrado, você receberá um link para redefinir sua senha.'
     };
 
     if (!user) return genericMessage;

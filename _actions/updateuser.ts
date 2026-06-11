@@ -33,23 +33,23 @@ export async function updateUser(_: FormStateUserUpdate, formData: FormData): Pr
 
     const emailInUse = await userRepository.findByEmailActive(email);
 
-    if (emailInUse && emailInUse.id !== sessionUser.id) return { errors: { email: ['This email address is already in use.'] } };
+    if (emailInUse && emailInUse.id !== sessionUser.id) return { errors: { email: ['Este endereço de e-mail já está em uso.'] } };
 
     const dataToUpdate: { name?: string, email?: string, avatar?: string | null } = {};
     if (sessionUser.name !== name) dataToUpdate.name = name;
     if (sessionUser.email !== email) dataToUpdate.email = email;
 
     if (file && file.size > 0) {
-        if (!(file.type in MIME_TO_EXT)) return { errors: { avatar: ['Only JPEG, PNG, and WebP formats are allowed.'] } };
+        if (!(file.type in MIME_TO_EXT)) return { errors: { avatar: ['Somente os formatos JPEG, PNG e WebP são permitidos.'] } };
 
-        if (file.size > MAX_FILE_SIZE) return { errors: { avatar: ['The image cannot exceed 512 KB.'] } };
+        if (file.size > MAX_FILE_SIZE) return { errors: { avatar: ['A imagem não pode exceder 512 KB.'] } };
 
         try {
             if (sessionUser.avatar) {
                 try {
                     await del(sessionUser.avatar);
                 } catch (deleteErr) {
-                    console.warn('It was not possible to delete the previous avatar:', deleteErr);
+                    console.warn('Não foi possível excluir o avatar anterior.:', deleteErr);
                 }
             }
 
@@ -61,11 +61,11 @@ export async function updateUser(_: FormStateUserUpdate, formData: FormData): Pr
             }
         } catch (error) {
             console.error('Error sending image:', error);
-            return { errors: { avatar: ['Error sending image. Please try again.'] } };
+            return { errors: { avatar: ['Erro ao enviar a imagem. Tente novamente.'] } };
         }
     }
 
-    if (Object.keys(dataToUpdate).length === 0) return { message: 'No changes made.' };
+    if (Object.keys(dataToUpdate).length === 0) return { message: 'Nenhuma alteração foi feita.' };
 
     await userRepository.updateByIdUserActive(sessionUser.id, dataToUpdate);
 

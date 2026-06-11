@@ -33,9 +33,9 @@ export async function updatePassword(_: FormStatePasswordUpdate, formData: FormD
 
     const isValid = await compare(current_password, authUser.password);
 
-    if (!isValid) return { errors: { current_password: ['The current password is incorrect.'] } };
+    if (!isValid) return { errors: { current_password: ['A senha atual está incorreta.'] } };
 
-    if (current_password === password) return { errors: { password: ['The new password cannot be the same as the old one.'] } };
+    if (current_password === password) return { errors: { password: ['A nova senha não pode ser igual à antiga.'] } };
 
     const hashedPassword = await hash(password, 12);
 
