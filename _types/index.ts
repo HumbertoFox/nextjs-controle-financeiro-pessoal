@@ -163,7 +163,6 @@ export type UserPublic = {
     readonly name: string;
     readonly email: string;
     readonly role: UserRole;
-    readonly is_owner: boolean;
     readonly avatar?: string | null;
     readonly email_verified?: string | null;
     readonly created_at: string;
@@ -185,6 +184,7 @@ export type UsersPagination = {
 }
 
 export type User = UserPublic & {
+    readonly is_owner: boolean;
     readonly password: string;
     readonly family_id?: string | null;
     readonly deleted_at?: string | null;
