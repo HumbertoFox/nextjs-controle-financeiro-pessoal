@@ -15,12 +15,15 @@ const sidebarNavItems: SidebarNavItemProps[] = [
     { text: 'Aparência', href: '/dashboard/settings/appearance' }
 ];
 
-export default function SettingsLayoutClient() {
+export default function SettingsLayoutClient({ emailVerified }: { emailVerified: boolean; }) {
     const currentPath = usePathname();
+    const visibleItems = sidebarNavItems.filter(item =>
+        item.href !== '/dashboard/settings/verify-email' || !emailVerified
+    );
     return (
         <aside className="w-full max-w-xl lg:w-48">
             <nav className="flex flex-col space-y-1 space-x-0">
-                {sidebarNavItems.map((item, index) => (
+                {visibleItems.map((item, index) => (
                     <Button
                         key={`${item.href}-${index}`}
                         size="sm"
