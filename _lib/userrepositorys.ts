@@ -1,5 +1,5 @@
 import pool, { QueryExecutor } from '@/_lib/db';
-import { User, UserAdminPublic, UserDetailsProps, UserPublic, UserRole, UsersPagination } from '@/_types';
+import { AccountType, User, UserActive, UserAdminPublic, UserDetailsProps, UserPublic, UserRole, UsersPagination } from '@/_types';
 
 const ALLOWED_UPDATE_COLUMNS_USER: ReadonlySet<string> = new Set(['name', 'email', 'avatar']);
 
@@ -42,7 +42,7 @@ export const userRepository = {
     // -------------------------------------------------------------------------
     async findActiveById(id: string, client?: QueryExecutor) {
         const executor = client ?? pool;
-        const result = await executor.query<User>(`
+        const result = await executor.query<UserActive>(`
             SELECT *
             FROM users_active
             WHERE id = $1
@@ -415,5 +415,36 @@ export const userRepository = {
         `,
             [id]
         );
+    },
+
+    // -------------------------------------------------------------------------
+    // Busca contas ativas do usuário para a página de perfil
+    // -------------------------------------------------------------------------
+    async getUserPageData(userId: string, client?: QueryExecutor): Promise<{
+        accounts: {
+            id: string;
+            name: string;
+            type: AccountType;
+            current_balance: string
+        }[];
+    }> {
+        const executor = client ?? pool;
+
+        const result = await executor.query<{
+            id: string;
+            name: string;
+            type: AccountType;
+            current_balance: string;
+        }>(`
+            SELECT id, name, type, current_balance::text
+            FROM accounts
+            WHERE user_id = $1
+              AND deleted_at IS NULL
+            ORDER BY created_at ASC
+        `,
+            [userId]
+        );
+
+        return { accounts: result.rows };
     },
 }

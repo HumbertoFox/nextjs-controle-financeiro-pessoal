@@ -70,6 +70,11 @@ CREATE INDEX IF NOT EXISTS idx_categories_deleted_at
 
 COMMENT ON INDEX idx_categories_deleted_at IS 'Otimiza queries que filtram categorias ativas/deletadas';
 
+CREATE INDEX IF NOT EXISTS idx_categories_parent_id
+    ON categories(parent_id);
+
+COMMENT ON INDEX idx_categories_parent_id IS 'Otimiza queries que buscam subcategorias de uma categoria pai';
+
 -- ============================================================================
 -- TABLE: transactions
 -- ============================================================================

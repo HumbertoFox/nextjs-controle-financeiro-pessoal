@@ -1,7 +1,6 @@
 'use client';
 
 import { InputError } from '@/_components/input-error';
-import { Transition } from '@headlessui/react';
 import { startTransition, useActionState, useEffect, useRef, useState } from 'react';
 import { Button } from '@/_components/ui/button';
 import { Input } from '@/_components/ui/input';
@@ -28,7 +27,7 @@ export default function PasswordPageClient({ csrfToken }: csrfTokenProps) {
     const toggleShowOldPassword = () => setShowOldPassword(!showOldPassword);
     const toggleShowPassword = () => setShowPassword(!showPassword);
     const toggleShowPasswordConfirm = () => setShowPasswordConfirm(!showPasswordConfirm);
-    const submit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const submit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         if (csrfToken) formData.append('csrfToken', csrfToken);
@@ -36,7 +35,7 @@ export default function PasswordPageClient({ csrfToken }: csrfTokenProps) {
     };
 
     useEffect(() => {
-        if (!state?.message) return;
+        if (!state?.ts) return;
 
         startTransition(() => setrecentlySuccessful(true));
 
@@ -51,7 +50,7 @@ export default function PasswordPageClient({ csrfToken }: csrfTokenProps) {
         }, 1000);
 
         return () => clearTimeout(timeout);
-    }, [state?.message]);
+    }, [state?.ts]);
     return (
         <>
             <div className="space-y-6">
@@ -155,15 +154,7 @@ export default function PasswordPageClient({ csrfToken }: csrfTokenProps) {
                             Salvar senha
                         </Button>
 
-                        <Transition
-                            show={recentlySuccessful}
-                            enter="transition ease-in-out"
-                            enterFrom="opacity-0"
-                            leave="transition ease-in-out"
-                            leaveTo="opacity-0"
-                        >
-                            <p className="text-sm text-neutral-600">Salvo</p>
-                        </Transition>
+                        <p className={`text-sm text-neutral-600 transition ease-in-out ${recentlySuccessful ? 'opacity-100' : 'opacity-0'}`}>Salvo</p>
                     </div>
                 </form>
             </div>

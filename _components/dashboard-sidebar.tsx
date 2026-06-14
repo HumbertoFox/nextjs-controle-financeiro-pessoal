@@ -4,7 +4,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import AppLogoSvg from '@/_components/app-logo-svg';
 import Link from 'next/link';
 import { NavMainAdmins } from '@/_components/nav-main-admins';
-import { LayoutGrid, UserRound, UserRoundCog, UserRoundPlus, UsersRound } from 'lucide-react';
+import { ArrowLeftRight, LayoutGrid, UserRound, UserRoundCog, UserRoundPlus, UsersRound } from 'lucide-react';
 import { NavMainUsers } from '@/_components/nav-main-users';
 import { NavUser } from '@/_components/nav-user';
 import { NavMainItemProps, ProfileForm, UserRole } from '@/_types';
@@ -21,7 +21,8 @@ const adminNavItems: NavMainItemProps[] = [
     { title: 'Registrar Usuário', href: '/dashboard/admins/register', icon: UserRoundPlus }
 ];
 const userNavItems: NavMainItemProps[] = [
-    { title: 'Usuário', href: '/dashboard/user', icon: UserRound }
+    { title: 'Usuário', href: '/dashboard/user', icon: UserRound },
+    { title: 'Transações', href: '/dashboard/transactions', icon: ArrowLeftRight }
 ];
 const usersDashboardNavItems: NavMainItemProps[] = [
     { title: 'Painel', href: '/dashboard', icon: LayoutGrid }

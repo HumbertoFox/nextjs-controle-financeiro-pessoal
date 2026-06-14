@@ -73,5 +73,5 @@ export async function updateUser(_: FormStateUserUpdate, formData: FormData): Pr
 
     await regenerateCsrfToken();
 
-    return { success: true };
+    return { success: true, ts: Date.now() };
 }

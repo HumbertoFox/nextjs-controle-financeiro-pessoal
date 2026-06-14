@@ -45,5 +45,5 @@ export async function updatePassword(_: FormStatePasswordUpdate, formData: FormD
 
     await regenerateCsrfToken();
 
-    return { message: true };
+    return { message: true, ts: Date.now() };
 }

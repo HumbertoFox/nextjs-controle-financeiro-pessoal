@@ -27,9 +27,11 @@ export default async function UsersPage(props: {
     const params = await props.searchParams;
     const rawPage = parseInt(String(params?.page ?? '1'), 10);
     const currentPage = Number.isNaN(rawPage) ? 1 : Math.max(1, rawPage);
-    const [users, total] = await userRepository.findUsersPaginated(currentPage, pageSize);
+    const [[users, total], csrfToken] = await Promise.all([
+        userRepository.findUsersPaginated(currentPage, pageSize),
+        getCsrfToken()
+    ])
     const totalPages = Math.ceil(total / pageSize);
-    const csrfToken = await getCsrfToken();
     return (
         <>
             <DashboardSidebarHeader items={breadcrumbItems} />

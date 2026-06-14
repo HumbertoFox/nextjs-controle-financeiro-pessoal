@@ -2,9 +2,33 @@ import { LucideIcon } from 'lucide-react';
 
 export type UserRole = 'INDIVIDUAL' | 'MEMBER' | 'ADMIN';
 
+export type AccountType = 'CURRENT' | 'SAVINGS' | 'CREDIT' | 'INVESTMENT' | 'DIGITAL';
+
+export type TransactionType = 'REVENUE' | 'EXPENSE';
+
+export type TransactionStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED';
+
 export const UserRolesZod: UserRole[] = ['INDIVIDUAL', 'MEMBER', 'ADMIN'];
 
+export const AccountAypeZod: AccountType[] = ['CURRENT', 'SAVINGS', 'CREDIT', 'INVESTMENT', 'DIGITAL'];
+
+export const TransactionTypeZod: TransactionType[] = ['REVENUE', 'EXPENSE'];
+
+export const transactionStatusZod: TransactionStatus[] = ['PENDING', 'CONFIRMED', 'CANCELLED'];
+
 export const roleLabels: Record<UserRole, string> = { INDIVIDUAL: 'Individual', MEMBER: 'Membro', ADMIN: 'Administrador' };
+
+export const accountTypeLabel: Record<AccountType, string> = { CURRENT: 'Conta corrente', SAVINGS: 'Poupança', CREDIT: 'Cartão de crédito', INVESTMENT: 'Investimento', DIGITAL: 'Conta digital' };
+
+export const transactionTypeLabel: Record<TransactionType, string> = { REVENUE: 'Receita', EXPENSE: 'Despesa' };
+
+export const transactionStatusLabel: Record<TransactionStatus, string> = { PENDING: 'Pendente', CONFIRMED: 'Confirmado', CANCELLED: 'Cancelado' };
+
+export const TransactionStatusClass: Record<TransactionStatus, string> = {
+    PENDING: 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300',
+    CONFIRMED: 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300',
+    CANCELLED: 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300'
+};
 
 export const MAX_FILE_SIZE = 512 * 1024;
 
@@ -29,6 +53,10 @@ export type UserDetailsProps = {
     readonly updated_at: string;
 }
 
+export type UserActive = UserDetailsProps & {
+    readonly password: string;
+}
+
 export type UserProfilePageProps = {
     readonly name: string;
     readonly email: string;
@@ -40,6 +68,78 @@ export type UserSettingsClientProps = {
     user: UserDetailsProps;
     readonly csrfToken?: string;
     readonly familyMembers: Pick<UserDetailsProps, 'id' | 'name' | 'avatar' | 'role'>[];
+}
+
+export type Account = {
+    readonly id: string;
+    readonly name: string;
+    readonly type: AccountType;
+    readonly current_balance: string;
+    readonly initial_balance: string;
+}
+
+export type CategoryNode = {
+    readonly id: string;
+    readonly name: string;
+    readonly type: TransactionType;
+    readonly parent_id: string | null;
+    readonly depth: number;
+    readonly children?: CategoryNode[];
+}
+
+export type CategoryFlat = {
+    readonly id: string;
+    readonly name: string;
+    readonly type: TransactionType;
+    readonly parent_id: string | null;
+    readonly parent_name: string | null;
+    readonly depth: number;
+}
+
+export type TransactionRow = {
+    readonly id: string;
+    readonly type: TransactionType;
+    readonly value: string;
+    readonly description: string | null;
+    readonly transaction_date: string;
+    readonly status: TransactionStatus;
+    readonly account_name: string;
+    readonly category_name: string;
+    readonly subcategory_name: string | null;
+}
+
+export type TransactionsPaginated = {
+    rows: TransactionRow[];
+    readonly total: number;
+}
+
+export type DialogAddCategoryProps = {
+    readonly userId: string;
+    categories: CategoryFlat[];
+}
+
+export type DialogAddTransactionProps = {
+    readonly userId: string;
+    accounts: Account[];
+    categories: CategoryFlat[];
+}
+
+export type TransactionsTableProps = {
+    rows: TransactionRow[];
+    readonly total: number;
+    readonly pageSize: number;
+}
+
+export type AccountSummary = {
+    readonly id: string;
+    readonly name: string;
+    readonly type: AccountType;
+    readonly current_balance: string;
+}
+
+export type UserSummaryCardsProps = {
+    user: UserDetailsProps;
+    accounts: AccountSummary[];
 }
 
 export type ProfileForm = {
@@ -211,14 +311,19 @@ export type InviteMemberFromProps = {
 }
 
 export type InviteAcceptClientProps = {
-    email: string;
-    token: string;
-    csrfToken?: string;
+    readonly email: string;
+    readonly token: string;
+    readonly csrfToken?: string;
 }
 
 export type InviteAcceptPageProps = {
     searchParams: Promise<{
-        email?: string;
-        token?: string
+        readonly email?: string;
+        readonly token?: string
     }>;
+}
+
+export type UserDetailsTableProps = {
+    user: UserDetailsProps;
+    readonly familyName: string | null;
 }

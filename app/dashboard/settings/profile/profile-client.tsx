@@ -1,6 +1,5 @@
 'use client';
 
-import { Transition } from '@headlessui/react';
 import { startTransition, useActionState, useEffect, useState } from 'react';
 import DeleteUser from '@/_components/delete-user';
 import { InputError } from '@/_components/input-error';
@@ -59,7 +58,7 @@ export function ProfilePageClient({ name, email, avatar, mustVerifyEmail, csrfTo
         setStatus(result);
     };
     useEffect(() => {
-        if (!state?.success) return;
+        if (!state?.ts) return;
 
         startTransition(() => setRecentlySuccessful(true));
 
@@ -68,7 +67,7 @@ export function ProfilePageClient({ name, email, avatar, mustVerifyEmail, csrfTo
         }, 1000);
 
         return () => clearTimeout(timeout);
-    }, [state?.success]);
+    }, [state?.ts]);
     return (
         <>
             <div className="space-y-6">
@@ -200,15 +199,7 @@ export function ProfilePageClient({ name, email, avatar, mustVerifyEmail, csrfTo
                     <div className="flex items-center gap-4">
                         <Button disabled={pending || Boolean(imageError)}>Salvar</Button>
 
-                        <Transition
-                            show={recentlySuccessful}
-                            enter="transition ease-in-out"
-                            enterFrom="opacity-0"
-                            leave="transition ease-in-out"
-                            leaveTo="opacity-0"
-                        >
-                            <p className="text-sm text-neutral-600">Salvo</p>
-                        </Transition>
+                        <p className={`text-sm text-neutral-600 transition ease-in-out ${recentlySuccessful ? 'opacity-100' : 'opacity-0'}`}>Salvo</p>
                     </div>
                 </form>
             </div>
