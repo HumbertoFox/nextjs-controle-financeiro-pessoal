@@ -10,7 +10,7 @@ export type TransactionStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED';
 
 export const UserRolesZod: UserRole[] = ['INDIVIDUAL', 'MEMBER', 'ADMIN'];
 
-export const AccountAypeZod: AccountType[] = ['CURRENT', 'SAVINGS', 'CREDIT', 'INVESTMENT', 'DIGITAL'];
+export const AccountTypeZod: AccountType[] = ['CURRENT', 'SAVINGS', 'CREDIT', 'INVESTMENT', 'DIGITAL'];
 
 export const TransactionTypeZod: TransactionType[] = ['REVENUE', 'EXPENSE'];
 

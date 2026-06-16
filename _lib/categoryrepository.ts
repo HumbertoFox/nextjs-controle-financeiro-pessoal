@@ -92,6 +92,30 @@ export const categoryRepository = {
     },
 
     // -------------------------------------------------------------------------
+    // Verifica se já existe categoria ativa com mesmo nome e pai para o usuário
+    // -------------------------------------------------------------------------
+    async findByUserIdAndNameAndParent(
+        userId: string,
+        name: string,
+        parentId: string | null,
+        client?: QueryExecutor
+    ): Promise<{ id: string } | null> {
+        const executor = client ?? pool;
+        const result = await executor.query<{ id: string }>(`
+            SELECT id
+            FROM categories
+            WHERE user_id = $1
+                AND lower(name) = lower($2)
+                AND ($3::uuid IS NULL AND parent_id IS NULL OR parent_id = $3::uuid)
+                AND deleted_at IS NULL
+            LIMIT 1
+        `,
+            [userId, name, parentId]
+        );
+        return result.rows[0] ?? null;
+    },
+
+    // -------------------------------------------------------------------------
     // Cria categoria (raiz ou filha)
     // -------------------------------------------------------------------------
     async create(data: {

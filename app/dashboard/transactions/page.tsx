@@ -7,7 +7,7 @@ import { accountRepository } from '@/_lib/accountrepository';
 import { categoryRepository } from '@/_lib/categoryrepository';
 import { getUser } from '@/_lib/dal';
 import { transactionRepository } from '@/_lib/transactionrepository';
-import { UserDetailsProps, UserRolesZod } from '@/_types';
+import { UserPublic, UserRolesZod } from '@/_types';
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
@@ -17,19 +17,19 @@ export const generateMetadata = async (): Promise<Metadata> => {
 
 const breadcrumbItems = [
     { text: 'Painel', href: '/dashboard' },
-    { text: 'Transações' },
+    { text: 'Transações' }
 ];
 
 const PAGE_SIZE = 20;
 
 export default async function TransactionsPage() {
-    const user = await getUser() as UserDetailsProps;
-    if (!user || !UserRolesZod.includes(user.role)) redirect('/dashboard');
+    const userActive = await getUser() as UserPublic;
+    if (!userActive || !UserRolesZod.includes(userActive.role)) redirect('/dashboard');
 
     const [{ rows, total }, accounts, categories] = await Promise.all([
-        transactionRepository.findByUserIdPaginated(user.id, 1, PAGE_SIZE),
-        accountRepository.findByUserId(user.id),
-        categoryRepository.findTreeByUserId(user.id),
+        transactionRepository.findByUserIdPaginated(userActive.id, 1, PAGE_SIZE),
+        accountRepository.findByUserId(userActive.id),
+        categoryRepository.findTreeByUserId(userActive.id)
     ]);
 
     return (
@@ -41,11 +41,17 @@ export default async function TransactionsPage() {
                     <p className="text-sm text-muted-foreground">
                         {total} {total === 1 ? 'transação' : 'transações'}
                     </p>
+                    
                     <div className="flex items-center gap-2">
-                        <DialogAddAccount userId={user.id} />
-                        <DialogAddCategory userId={user.id} categories={categories} />
+                        <DialogAddAccount userId={userActive.id} />
+
+                        <DialogAddCategory
+                            userId={userActive.id}
+                            categories={categories}
+                        />
+
                         <DialogAddTransaction
-                            userId={user.id}
+                            userId={userActive.id}
                             accounts={accounts}
                             categories={categories}
                         />
@@ -53,7 +59,11 @@ export default async function TransactionsPage() {
                 </div>
 
                 {/* Tabela */}
-                <TransactionsTable rows={rows} total={total} pageSize={PAGE_SIZE} />
+                <TransactionsTable
+                    rows={rows}
+                    total={total}
+                    pageSize={PAGE_SIZE}
+                />
             </div>
         </>
     );

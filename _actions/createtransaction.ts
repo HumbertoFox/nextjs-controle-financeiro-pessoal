@@ -3,7 +3,8 @@
 import { getUser } from '@/_lib/dal';
 import { transactionRepository } from '@/_lib/transactionrepository';
 import { isValidUUID } from '@/_lib/useful';
-import { TransactionType } from '@/_types';
+import { TransactionType, TransactionTypeZod } from '@/_types';
+import { revalidatePath } from 'next/cache';
 
 export async function createTransactionAction(fd: FormData) {
     const user = await getUser();
@@ -17,7 +18,7 @@ export async function createTransactionAction(fd: FormData) {
     const description = (fd.get('description') as string) || null;
 
     if (!isValidUUID(accountId) || !isValidUUID(categoryId)) return { error: 'Dados inválidos.' };
-    if (!['REVENUE', 'EXPENSE'].includes(type)) return { error: 'Tipo inválido.' };
+    if (!TransactionTypeZod.includes(type)) return { error: 'Tipo inválido.' };
     if (isNaN(value) || value <= 0) return { error: 'Valor inválido.' };
     if (!transactionDate) return { error: 'Data obrigatória.' };
 
@@ -25,6 +26,7 @@ export async function createTransactionAction(fd: FormData) {
         await transactionRepository.create({
             userId: user.id, accountId, categoryId, type, value, description, transactionDate
         });
+        revalidatePath('/dashboard/transactions');
         return {};
     } catch {
         return { error: 'Erro ao salvar transação.' };

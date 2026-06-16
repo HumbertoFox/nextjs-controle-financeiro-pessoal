@@ -14,7 +14,7 @@ const connectionString = isProduction ? DATABASE_URL.replace('sslmode=require', 
 
 const basePool = new Pool({
     connectionString,
-    ssl: isProduction ? { rejectUnauthorized: true } : false,
+    ssl: isProduction && process.env.DB_SSL !== 'false' ? { rejectUnauthorized: true } : false,
 });
 
 // Pool "cru" — sem SET ROLE, para uso exclusivo em scripts de migrate/admin.

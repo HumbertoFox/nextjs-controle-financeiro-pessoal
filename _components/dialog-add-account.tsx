@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, } from '@/_components/ui/dialog';
 import { Button } from '@/_components/ui/button';
 import { Input } from '@/_components/ui/input';
@@ -18,12 +17,11 @@ const ACCOUNT_TYPES = [
 ] as const;
 
 export function DialogAddAccount({ userId }: { userId: string }) {
-    const router = useRouter();
     const [open, setOpen] = useState(false);
     const [isPending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
 
-    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
         setError(null);
         const fd = new FormData(e.currentTarget);
@@ -32,7 +30,6 @@ export function DialogAddAccount({ userId }: { userId: string }) {
             const result = await createAccountAction(fd);
             if (result?.error) { setError(result.error); return; }
             setOpen(false);
-            router.refresh();
         });
     }
 

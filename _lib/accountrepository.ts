@@ -1,5 +1,5 @@
 import pool, { QueryExecutor } from '@/_lib/db';
-import { Account } from '@/_types';
+import { Account, AccountType } from '@/_types';
 
 export const accountRepository = {
     // -------------------------------------------------------------------------
@@ -17,6 +17,30 @@ export const accountRepository = {
             [userId]
         );
         return result.rows;
+    },
+
+    // -------------------------------------------------------------------------
+    // Verifica se já existe conta ativa com mesmo nome e tipo para o usuário
+    // -------------------------------------------------------------------------
+    async findByUserIdAndNameAndType(
+        userId: string,
+        name: string,
+        type: AccountType,
+        client?: QueryExecutor
+    ): Promise<{ id: string } | null> {
+        const executor = client ?? pool;
+        const result = await executor.query<{ id: string }>(`
+        SELECT id
+        FROM accounts
+        WHERE user_id = $1
+          AND lower(name) = lower($2)
+          AND type = $3
+          AND deleted_at IS NULL
+        LIMIT 1
+    `,
+            [userId, name, type]
+        );
+        return result.rows[0] ?? null;
     },
 
     // -------------------------------------------------------------------------

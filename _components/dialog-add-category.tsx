@@ -1,22 +1,20 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, } from '@/_components/ui/dialog';
 import { Button } from '@/_components/ui/button';
 import { Input } from '@/_components/ui/input';
 import { Label } from '@/_components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/_components/ui/select';
 import { createCategoryAction } from '@/_actions/createcategory';
-import { DialogAddCategoryProps } from '@/_types';
+import { DialogAddCategoryProps, TransactionType, TransactionTypeZod } from '@/_types';
 
 export function DialogAddCategory({ userId, categories }: DialogAddCategoryProps) {
-    const router = useRouter();
     const [open, setOpen] = useState(false);
     const [isPending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
 
-    const [type, setType] = useState<'REVENUE' | 'EXPENSE'>('EXPENSE');
+    const [type, setType] = useState<TransactionType>('EXPENSE');
     const [parentId, setParentId] = useState('');
     const [subParentId, setSubParentId] = useState('');
 
@@ -33,13 +31,13 @@ export function DialogAddCategory({ userId, categories }: DialogAddCategoryProps
     const parentDepth = subParentId ? 2 : parentId ? 1 : 0;
     const isLeafLevel = parentDepth >= 2;
 
-    function handleTypeChange(val: 'REVENUE' | 'EXPENSE') {
+    function handleTypeChange(val: TransactionType) {
         setType(val);
         setParentId('');
         setSubParentId('');
     }
 
-    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
         setError(null);
         const fd = new FormData(e.currentTarget);
@@ -50,7 +48,6 @@ export function DialogAddCategory({ userId, categories }: DialogAddCategoryProps
             const result = await createCategoryAction(fd);
             if (result?.error) { setError(result.error); return; }
             setOpen(false);
-            router.refresh();
         });
     }
 
@@ -68,7 +65,7 @@ export function DialogAddCategory({ userId, categories }: DialogAddCategoryProps
 
                     {/* Tipo */}
                     <div className="grid grid-cols-2 gap-2">
-                        {(['EXPENSE', 'REVENUE'] as const).map((t) => (
+                        {TransactionTypeZod.map((t) => (
                             <button
                                 key={t}
                                 type="button"
