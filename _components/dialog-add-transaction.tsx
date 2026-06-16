@@ -102,10 +102,17 @@ export function DialogAddTransaction({ accounts, categories }: DialogAddTransact
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="accountId">Conta</Label>
                         <Select name="accountId" required>
-                            <SelectTrigger id="accountId"><SelectValue placeholder="Selecione a conta" /></SelectTrigger>
+                            <SelectTrigger id="accountId">
+                                <SelectValue placeholder="Selecione a conta" />
+                            </SelectTrigger>
                             <SelectContent>
                                 {accounts.map((a) => (
-                                    <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                                    <SelectItem
+                                        key={a.id}
+                                        value={a.id}
+                                    >
+                                        {a.name}
+                                    </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
@@ -114,11 +121,22 @@ export function DialogAddTransaction({ accounts, categories }: DialogAddTransact
                     {/* Categoria raiz */}
                     <div className="flex flex-col gap-1.5">
                         <Label>Categoria</Label>
-                        <Select value={categoryId} onValueChange={handleCategoryChange} required>
-                            <SelectTrigger><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
+                        <Select
+                            value={categoryId}
+                            onValueChange={handleCategoryChange}
+                            required
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecione a categoria" />
+                            </SelectTrigger>
                             <SelectContent>
                                 {roots.map((c) => (
-                                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                    <SelectItem
+                                        key={c.id}
+                                        value={c.id}
+                                    >
+                                        {c.name}
+                                    </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
@@ -128,11 +146,21 @@ export function DialogAddTransaction({ accounts, categories }: DialogAddTransact
                     {children.length > 0 && (
                         <div className="flex flex-col gap-1.5">
                             <Label>Subcategoria</Label>
-                            <Select value={subcategoryId} onValueChange={handleSubcategoryChange}>
-                                <SelectTrigger><SelectValue placeholder="Selecione (opcional)" /></SelectTrigger>
+                            <Select
+                                value={subcategoryId}
+                                onValueChange={handleSubcategoryChange}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecione (opcional)" />
+                                </SelectTrigger>
                                 <SelectContent>
                                     {children.map((c) => (
-                                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                        <SelectItem
+                                            key={c.id}
+                                            value={c.id}
+                                        >
+                                            {c.name}
+                                        </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -143,11 +171,21 @@ export function DialogAddTransaction({ accounts, categories }: DialogAddTransact
                     {grandchildren.length > 0 && (
                         <div className="flex flex-col gap-1.5">
                             <Label>Detalhe</Label>
-                            <Select value={subsubcategoryId} onValueChange={setSubsubcategoryId}>
-                                <SelectTrigger><SelectValue placeholder="Selecione (opcional)" /></SelectTrigger>
+                            <Select
+                                value={subsubcategoryId}
+                                onValueChange={setSubsubcategoryId}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecione (opcional)" />
+                                </SelectTrigger>
                                 <SelectContent>
                                     {grandchildren.map((c) => (
-                                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                        <SelectItem
+                                            key={c.id}
+                                            value={c.id}
+                                        >
+                                            {c.name}
+                                        </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -157,7 +195,15 @@ export function DialogAddTransaction({ accounts, categories }: DialogAddTransact
                     {/* Valor */}
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="value">Valor (R$)</Label>
-                        <Input id="value" name="value" type="number" min="0.01" step="0.01" placeholder="0,00" required />
+                        <Input
+                            id="value"
+                            name="value"
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            placeholder="0,00"
+                            required
+                        />
                     </div>
 
                     {/* Data */}
@@ -175,12 +221,20 @@ export function DialogAddTransaction({ accounts, categories }: DialogAddTransact
                     {/* Descrição */}
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="description">Descrição <span className="text-muted-foreground">(opcional)</span></Label>
-                        <Input id="description" name="description" placeholder="Ex: almoço com cliente" />
+                        <Input
+                            id="description"
+                            name="description"
+                            placeholder="Ex: almoço com cliente"
+                        />
                     </div>
 
                     {error && <p className="text-xs text-red-600">{error}</p>}
 
-                    <Button type="submit" disabled={isPending} className="mt-1">
+                    <Button
+                        type="submit"
+                        disabled={isPending}
+                        className="mt-1"
+                    >
                         {isPending ? 'Salvando...' : 'Salvar transação'}
                     </Button>
                 </form>

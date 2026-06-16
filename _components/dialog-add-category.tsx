@@ -86,11 +86,21 @@ export function DialogAddCategory({ userId, categories }: DialogAddCategoryProps
                     {roots.length > 0 && (
                         <div className="flex flex-col gap-1.5">
                             <Label>Categoria pai <span className="text-muted-foreground">(opcional)</span></Label>
-                            <Select value={parentId} onValueChange={(v) => { setParentId(v); setSubParentId(''); }}>
-                                <SelectTrigger><SelectValue placeholder="Criar como categoria raiz" /></SelectTrigger>
+                            <Select
+                                value={parentId}
+                                onValueChange={(v) => { setParentId(v); setSubParentId(''); }}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Criar como categoria raiz" />
+                                </SelectTrigger>
                                 <SelectContent>
                                     {roots.map((c) => (
-                                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                        <SelectItem
+                                            key={c.id}
+                                            value={c.id}
+                                        >
+                                            {c.name}
+                                        </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -101,11 +111,21 @@ export function DialogAddCategory({ userId, categories }: DialogAddCategoryProps
                     {children.length > 0 && !isLeafLevel && (
                         <div className="flex flex-col gap-1.5">
                             <Label>Subcategoria pai <span className="text-muted-foreground">(opcional)</span></Label>
-                            <Select value={subParentId} onValueChange={setSubParentId}>
-                                <SelectTrigger><SelectValue placeholder="Criar no nível anterior" /></SelectTrigger>
+                            <Select
+                                value={subParentId}
+                                onValueChange={setSubParentId}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Criar no nível anterior" />
+                                </SelectTrigger>
                                 <SelectContent>
                                     {children.map((c) => (
-                                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                        <SelectItem
+                                            key={c.id}
+                                            value={c.id}
+                                        >
+                                            {c.name}
+                                        </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -115,12 +135,20 @@ export function DialogAddCategory({ userId, categories }: DialogAddCategoryProps
                     {/* Nome */}
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="name">Nome</Label>
-                        <Input id="name" name="name" placeholder="Ex: Transporte" required />
+                        <Input
+                            id="name"
+                            name="name"
+                            placeholder="Ex: Transporte"
+                            required
+                        />
                     </div>
 
                     {error && <p className="text-xs text-red-600">{error}</p>}
 
-                    <Button type="submit" disabled={isPending}>
+                    <Button
+                        type="submit"
+                        disabled={isPending}
+                    >
                         {isPending ? 'Salvando...' : 'Criar categoria'}
                     </Button>
                 </form>

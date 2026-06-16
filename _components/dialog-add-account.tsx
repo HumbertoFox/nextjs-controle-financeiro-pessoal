@@ -52,11 +52,21 @@ export function DialogAddAccount({ userId }: { userId: string }) {
 
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="type">Tipo</Label>
-                        <Select name="type" required>
-                            <SelectTrigger id="type"><SelectValue placeholder="Selecione o tipo" /></SelectTrigger>
+                        <Select
+                            name="type"
+                            required
+                        >
+                            <SelectTrigger id="type">
+                                <SelectValue placeholder="Selecione o tipo" />
+                            </SelectTrigger>
                             <SelectContent>
                                 {ACCOUNT_TYPES.map((t) => (
-                                    <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                                    <SelectItem
+                                        key={t.value}
+                                        value={t.value}
+                                    >
+                                        {t.label}
+                                    </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
@@ -64,12 +74,23 @@ export function DialogAddAccount({ userId }: { userId: string }) {
 
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="initialBalance">Saldo inicial (R$)</Label>
-                        <Input id="initialBalance" name="initialBalance" type="number" min="0" step="0.01" defaultValue="0" required />
+                        <Input
+                            id="initialBalance"
+                            name="initialBalance"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            defaultValue="0"
+                            required
+                        />
                     </div>
 
                     {error && <p className="text-xs text-red-600">{error}</p>}
 
-                    <Button type="submit" disabled={isPending}>
+                    <Button
+                        type="submit"
+                        disabled={isPending}
+                    >
                         {isPending ? 'Salvando...' : 'Criar conta'}
                     </Button>
                 </form>
