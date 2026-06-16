@@ -50,7 +50,6 @@ export function DialogAddCategory({ userId, categories }: DialogAddCategoryProps
             setOpen(false);
         });
     }
-
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>

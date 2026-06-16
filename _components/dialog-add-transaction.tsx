@@ -68,7 +68,6 @@ export function DialogAddTransaction({ accounts, categories }: DialogAddTransact
             setOpen(false);
         });
     }
-
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>

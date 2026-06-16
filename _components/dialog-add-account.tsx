@@ -7,14 +7,7 @@ import { Input } from '@/_components/ui/input';
 import { Label } from '@/_components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/_components/ui/select';
 import { createAccountAction } from '@/_actions/createaccount';
-
-const ACCOUNT_TYPES = [
-    { value: 'CURRENT', label: 'Conta corrente' },
-    { value: 'SAVINGS', label: 'Poupança' },
-    { value: 'CREDIT', label: 'Cartão de crédito' },
-    { value: 'INVESTMENT', label: 'Investimento' },
-    { value: 'DIGITAL', label: 'Conta digital' },
-] as const;
+import { AccountType, accountTypeLabel } from '@/_types';
 
 export function DialogAddAccount({ userId }: { userId: string }) {
     const [open, setOpen] = useState(false);
@@ -32,7 +25,6 @@ export function DialogAddAccount({ userId }: { userId: string }) {
             setOpen(false);
         });
     }
-
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -60,12 +52,12 @@ export function DialogAddAccount({ userId }: { userId: string }) {
                                 <SelectValue placeholder="Selecione o tipo" />
                             </SelectTrigger>
                             <SelectContent>
-                                {ACCOUNT_TYPES.map((t) => (
+                                {(Object.entries(accountTypeLabel) as [AccountType, string][]).map(([value, label]) => (
                                     <SelectItem
-                                        key={t.value}
-                                        value={t.value}
+                                        key={value}
+                                        value={value}
                                     >
-                                        {t.label}
+                                        {label}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
