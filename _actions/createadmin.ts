@@ -3,6 +3,7 @@
 import { put } from '@vercel/blob';
 import { createAdminSchema, FormStateCreateAdmin } from '@/_lib/definitions';
 import { createSession } from '@/_lib/session';
+import crypto from 'crypto';
 import * as bcrypt from 'bcrypt-ts';
 import z from 'zod';
 import sharp from 'sharp';
@@ -11,6 +12,10 @@ import { regenerateCsrfToken, validateCsrfToken } from '@/_lib/csrf';
 import { MAX_DIMENSION, MAX_FILE_SIZE, MIME_TO_EXT, UserRole } from '@/_types';
 import { redirect } from 'next/navigation';
 import { formatBrazilianName } from '@/_lib/useful';
+import { getTransactionClient } from '@/_lib/db';
+import { verificationTokenRepository } from '@/_lib/verificationtokenrepositorys';
+import { hashToken } from '@/_lib/tokenutils';
+import { sendCreatedEmailAccountVerification } from '@/_lib/mail';
 
 export async function createAdmin(_: FormStateCreateAdmin, formData: FormData): Promise<FormStateCreateAdmin> {
     const csrfToken = formData.get('csrfToken') as string;
@@ -30,32 +35,61 @@ export async function createAdmin(_: FormStateCreateAdmin, formData: FormData): 
 
     const { name, email, password } = validatedFields.data;
 
-    try {
-        const existingUser = await userRepository.findByEmail(email);
-        if (existingUser) return { warning: 'Dados já cadastrados.' };
+    if (file && file.size > 0) {
+        if (!(file.type in MIME_TO_EXT)) return { errors: { avatar: ['Somente os formatos JPEG, PNG ou WebP são permitidos.'] } };
+        if (file.size > MAX_FILE_SIZE) return { errors: { avatar: ['A imagem não pode exceder 512 KB.'] } };
 
-        const adminExists = await userRepository.adminExists();
+        try {
+            const buffer = Buffer.from(await file.arrayBuffer());
+            const metadata = await sharp(buffer).metadata();
+            const { width, height } = metadata;
+            if (!width || !height || width > MAX_DIMENSION || height > MAX_DIMENSION) return { errors: { avatar: [`A imagem não pode exceder 512x512px. (atual: ${width}x${height})`] } };
+        } catch {
+            return { errors: { avatar: ['Não foi possível ler a imagem.'] } };
+        }
+    }
+
+    const client = await getTransactionClient();
+    let user: { id: string; role: UserRole };
+
+    try {
+        await client.query('BEGIN');
+
+        const existingUser = await userRepository.findByEmail(email, client);
+        if (existingUser) {
+            await client.query('ROLLBACK');
+            return { warning: 'Dados já cadastrados.' };
+        }
+
+        const adminExists = await userRepository.adminExists(client);
         const role: UserRole = adminExists ? 'INDIVIDUAL' : 'ADMIN';
 
         const hashedPassword = await bcrypt.hash(password, 12);
 
-        if (file && file.size > 0) {
-            if (!(file.type in MIME_TO_EXT)) return { errors: { avatar: ['Somente os formatos JPEG, PNG ou WebP são permitidos.'] } };
-            if (file.size > MAX_FILE_SIZE) return { errors: { avatar: ['A imagem não pode exceder 512 KB.'] } };
+        user = await userRepository.create({
+            name: formatBrazilianName(name), email, password: hashedPassword, role
+        }, client);
 
-            try {
-                const buffer = Buffer.from(await file.arrayBuffer());
-                const metadata = await sharp(buffer).metadata();
-                const { width, height } = metadata;
-                if (!width || !height || width > MAX_DIMENSION || height > MAX_DIMENSION) return { errors: { avatar: [`A imagem não pode exceder 512x512px. (atual: ${width}x${height})`] } };
-            } catch {
-                return { errors: { avatar: ['Não foi possível ler a imagem.'] } };
-            }
+        await verificationTokenRepository.deleteByIdentifier(email, client);
+
+        const rawToken = crypto.randomBytes(32).toString('hex');
+        const expires_at = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+        await verificationTokenRepository.create({
+            identifier: email, token: hashToken(rawToken), expires_at
+        }, client);
+
+        const encodedEmail = encodeURIComponent(email);
+        const verifyLink = `${process.env.NEXT_URL}/verify-email?token=${rawToken}&email=${encodedEmail}`;
+        const verifySessionLink = `${process.env.NEXT_URL}/dashboard/settings/verify-email?token=${rawToken}&email=${encodedEmail}`;
+
+        const emailResult = await sendCreatedEmailAccountVerification(email, verifyLink, verifySessionLink);
+
+        if (!emailResult.ok) {
+            console.error('Failed to send verification email:', emailResult.error);
+            throw new Error('EMAIL_SEND_FAILED');
         }
 
-        const user = await userRepository.create({
-            name: formatBrazilianName(name), email, password: hashedPassword, role
-        });
 
         if (file && file.size > 0) {
             const extension = MIME_TO_EXT[file.type];
@@ -66,10 +100,13 @@ export async function createAdmin(_: FormStateCreateAdmin, formData: FormData): 
             await userRepository.updateAvatar(user.id, blob.url);
         }
 
-        const sessionVersion = await userRepository.incrementSessionVersion(user.id);
-
+        const sessionVersion = await userRepository.incrementSessionVersion(user.id, client);
         await createSession(user.id, user.role, sessionVersion);
+
+        await client.query('COMMIT');
     } catch (error) {
+        await client.query('ROLLBACK');
+        if (error instanceof Error && error.message === 'EMAIL_SEND_FAILED') return { warning: 'Não foi possível enviar o e-mail de verificação. Por favor, tente novamente mais tarde.' };
         console.error(error);
         return { warning: 'Algo deu errado. Por favor, tente novamente mais tarde.' };
     }

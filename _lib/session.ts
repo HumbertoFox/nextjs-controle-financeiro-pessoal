@@ -53,14 +53,7 @@ export async function createSession(userId: string, role: UserRole, sessionVersi
 export async function verifySession(): Promise<{ isAuth: boolean; userId: string; }> {
     const cookie = (await cookies()).get('sessionAuth')?.value;
     const session = await decrypt(cookie);
-
     if (!session?.userId) redirect('/login');
-
-    const user = await userRepository.findSessionVersion(String(session.userId));
-
-    if (!user || user.session_version !== session.sessionVersion) {
-        redirect('/login');
-    }
 
     return { isAuth: true, userId: String(session.userId) };
 }
@@ -89,6 +82,13 @@ export async function updateSession() {
         (await cookies()).delete('sessionAuth');
         return null;
     };
+
+    const user = await userRepository.findSessionVersion(String(payload.userId));
+
+    if (!user || user.session_version !== payload.sessionVersion) {
+        (await cookies()).delete('sessionAuth');
+        return null;
+    }
 
     if (timeLeft < RENEW_THRESHOLD) {
         const newExp = now + TOKEN_LIFETIME;

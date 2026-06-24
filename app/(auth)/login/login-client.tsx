@@ -50,10 +50,9 @@ export function LoginClient({ csrfToken }: csrfTokenProps) {
         router.push('/dashboard');
     }, [state, router]);
     useEffect(() => {
-        if (state?.retryAfterSeconds) {
-            setSecondsLeft(state.retryAfterSeconds);
-        }
-    }, [state]);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        if (state?.retryAfterSeconds) setSecondsLeft(state.retryAfterSeconds);
+    }, [state?.retryAfterSeconds]);
     useEffect(() => {
         if (!secondsLeft) return;
 
@@ -78,9 +77,9 @@ export function LoginClient({ csrfToken }: csrfTokenProps) {
                 >
                     <AppLogoIconSvg className="rounded-full" />
                 </Link>
-                <h1 className="text-xl font-medium">Log in to your account</h1>
+                <h1 className="text-xl font-medium">Faça login na sua conta</h1>
                 <p className="text-muted-foreground text-sm text-balance">
-                    Enter your email and password below to log in.
+                    Insira seu e-mail e senha abaixo para fazer login.
                 </p>
             </div>
             <form
@@ -89,7 +88,7 @@ export function LoginClient({ csrfToken }: csrfTokenProps) {
             >
                 <div className=" grid gap-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Email address</Label>
+                        <Label htmlFor="email">Endereço de email</Label>
                         <Input
                             id="email"
                             name="email"
@@ -102,21 +101,21 @@ export function LoginClient({ csrfToken }: csrfTokenProps) {
                             autoComplete="email"
                             value={data.email}
                             onChange={handleChange}
-                            placeholder="email@exemple.com"
+                            placeholder="email@exemplo.com"
                         />
                         {state?.errors?.email?.[0] && <InputError message={state.errors.email[0]} />}
                     </div>
 
                     <div className="grid gap-2">
                         <div className="flex items-center">
-                            <Label htmlFor="password">Password</Label>
+                            <Label htmlFor="password">Senha</Label>
                             {!statusFromParams && (
                                 <TextLink
                                     href="/forgot-password"
                                     className="ml-auto text-sm"
                                     tabIndex={5}
                                 >
-                                    Forgot your password?
+                                    Esqueceu sua senha?
                                 </TextLink>
                             )}
                         </div>
@@ -132,11 +131,11 @@ export function LoginClient({ csrfToken }: csrfTokenProps) {
                                 tabIndex={2}
                                 value={data.password}
                                 onChange={handleChange}
-                                placeholder="Password"
+                                placeholder="Senha"
                             />
                             <button
                                 type="button"
-                                title={isVisibledPassword ? "Hide password" : "Show password"}
+                                title={isVisibledPassword ? "Ocultar senha" : "Mostrar senha"}
                                 onClick={togglePasswordVisibility}
                                 className="btn-icon-toggle"
                             >
@@ -153,16 +152,16 @@ export function LoginClient({ csrfToken }: csrfTokenProps) {
                         disabled={pending || secondsLeft !== null}
                     >
                         {pending && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Log in
+                        Conecte-se
                     </Button>
 
                     <div className="text-muted-foreground text-center text-sm">
-                        There is no account!&nbsp;&nbsp;
+                        Não existe conta!&nbsp;&nbsp;
                         <TextLink
                             href="/register"
                             tabIndex={4}
                         >
-                            Sign up
+                            Register-se
                         </TextLink>
                     </div>
                 </div>

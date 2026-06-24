@@ -35,6 +35,7 @@ export default function VerifyEmailSettingsClient({ csrfToken }: csrfTokenProps)
 
     const isVerified = Boolean(state?.success);
     const resentOk = resendState === 'verification-link-sent';
+    const resentError = resendState === 'verification-error';
 
     return (
         <div className="space-y-6">
@@ -56,6 +57,11 @@ export default function VerifyEmailSettingsClient({ csrfToken }: csrfTokenProps)
             {resentOk && (
                 <p className="text-sm font-medium text-green-600">
                     Um novo link de verificação foi enviado para o seu e-mail.
+                </p>
+            )}
+            {resentError && (
+                <p className="text-sm font-medium text-red-600">
+                    Não foi possível enviar o e-mail de verificação. Por favor, tente novamente mais tarde.
                 </p>
             )}
 

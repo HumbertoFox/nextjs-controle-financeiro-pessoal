@@ -54,6 +54,26 @@ async function resolveBackendRole(client: pkg.PoolClient): Promise<boolean> {
     return backendRoleExists;
 }
 
+// Abre um client do basePool com SET ROLE aplicado, para uso em transações
+// manuais (BEGIN/COMMIT/ROLLBACK) no código de aplicação.
+export async function getTransactionClient(): Promise<pkg.PoolClient> {
+    const client = await basePool.connect();
+
+    const roleExists = await resolveBackendRole(client);
+    if (roleExists) {
+        try {
+            await client.query(`SET ROLE ${roleName}`);
+        } catch {
+            if (!isProduction) {
+                console.warn(`⚠️  SET ROLE ${roleName} not available.`);
+            }
+            backendRoleExists = false;
+        }
+    }
+
+    return client;
+}
+
 // Pool padrão da aplicação — aplica SET ROLE em cada query.
 // Use este pool em todo código de aplicação (rotas, serviços, etc.).
 const pool: QueryExecutor = {

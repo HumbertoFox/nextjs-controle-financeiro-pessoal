@@ -250,7 +250,6 @@ export type FormStatePasswordReset =
 export type FormStateEmailVerification =
     | {
         error?: string;
-        status?: string;
         success?: string;
     } | undefined;
 

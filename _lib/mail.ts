@@ -10,7 +10,7 @@ export const transporter = nodemailer.createTransport({ host: SMTP_HOST, port: S
 export const sendPasswordResetEmail = async (to: string, resetLink: string) => {
     try {
         const result = await transporter.sendMail({
-            from: `'nextjs-starter-kit' <${SMTP_USER}>`,
+            from: `"nextjs-starter-kit" <${SMTP_USER}>`,
             to,
             subject: 'Password reset',
             html: `
@@ -30,7 +30,7 @@ export const sendPasswordResetEmail = async (to: string, resetLink: string) => {
 export const sendEmailVerification = async (to: string, link: string, linkSession?: string) => {
     try {
         const result = await transporter.sendMail({
-            from: `'nextjs-starter-kit' <${SMTP_USER}>`,
+            from: `"nextjs-starter-kit" <${SMTP_USER}>`,
             to,
             subject: 'Check your email.',
             html: `
@@ -51,7 +51,7 @@ export const sendEmailVerification = async (to: string, link: string, linkSessio
 export const sendFamilyInviteEmail = async (to: string, familyName: string, inviteLink: string) => {
     try {
         const result = await transporter.sendMail({
-            from: `'nextjs-starter-kit' <${SMTP_USER}>`,
+            from: `"nextjs-starter-kit" <${SMTP_USER}>`,
             to,
             subject: `Convite para a família ${familyName}`,
             html: `
@@ -67,4 +67,25 @@ export const sendFamilyInviteEmail = async (to: string, familyName: string, invi
     } catch (error) {
         return { ok: false, error };
     };
+}
+
+export const sendCreatedEmailAccountVerification = async (to: string, link: string, linkSession?: string) => {
+    try {
+        const result = await transporter.sendMail({
+            from: `"nextjs-starter-kit" <${SMTP_USER}>`,
+            to,
+            subject: 'Check your email.',
+            html: `
+                <h2>Sua conta foi criada com sucesso!</h2>
+                <p>Clique no link abaixo para confirmar seu e-mail; se o e-mail não for confirmado em até 30 dias, você não conseguirá acessar sua conta.</p>
+                <a href='${link}'>${link}</a>
+                <p>Clique no link abaixo para confirmar seu e-mail (o sistema abrirá no mesmo navegador):</p>
+                <a href='${linkSession}'>${linkSession}</a>
+                <p>Se você não solicitou isso, pode ignorar este e-mail.</p>
+            `,
+        });
+        return { ok: true, result };
+    } catch (error) {
+        return { ok: false, error };
+    }
 }

@@ -34,15 +34,12 @@ export default function VerifyEmailClient({ csrfToken }: csrfTokenProps) {
         <div className="space-y-6 w-full 2xl:w-2/4">
             <div className="flex flex-col items-center gap-2 text-center mx-auto">
                 <h1 className="text-xl font-medium">Verifique seu e-mail</h1>
-                <p className="text-muted-foreground text-sm text-balance">Por favor, verifique seu endereço de e-mail clicando no link que acabamos de lhe enviar.</p>
+                <p className="text-muted-foreground text-sm text-balance">
+                    Por favor, verifique seu endereço de e-mail clicando no link que acabamos de lhe enviar.
+                </p>
             </div>
-            {state?.status === 'verification-link-sent' && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    <p>Um novo link de verificação foi enviado para o endereço de e-mail que você forneceu durante o cadastro.</p>
-                </div>
-            )}
-            {state?.success && <div className="mb-4 text-center text-sm font-medium text-blue-600">{state.success}</div>}
-            {state?.error && <div className="mb-4 text-center text-sm font-medium text-red-600">{state.error}</div>}
+            {state?.success && <p className="mb-4 text-center text-sm font-medium text-blue-600">{state.success}</p>}
+            {state?.error && <p className="mb-4 text-center text-sm font-medium text-red-600">{state.error}</p>}
 
             <form
                 onSubmit={submit}
@@ -78,7 +75,7 @@ export default function VerifyEmailClient({ csrfToken }: csrfTokenProps) {
                 <Button
                     type="submit"
                     variant="secondary"
-                    disabled={pending || state?.status === 'verification-link-sent' || Boolean(state?.error)}
+                    disabled={pending || Boolean(state?.success) || Boolean(state?.error)}
                     className="cursor-pointer"
                 >
                     {pending && <LoaderCircle className="h-4 w-4 animate-spin" />}
@@ -86,10 +83,10 @@ export default function VerifyEmailClient({ csrfToken }: csrfTokenProps) {
                 </Button>
 
                 <TextLink
-                    href={!state?.status ? "/login" : `/login?status=email%20verified&email=${email}`}
+                    href={!state?.success ? "/login" : `/login?status=email%20verified&email=${email}`}
                     className="mx-auto block text-sm"
                 >
-                    {!state?.status ? 'Conecte-se' : 'Continuar para iniciar sessão'}
+                    {!state?.success ? 'Conecte-se' : 'Continuar para iniciar sessão'}
                 </TextLink>
             </form>
         </div>
