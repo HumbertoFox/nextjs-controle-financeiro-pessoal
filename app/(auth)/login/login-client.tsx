@@ -50,7 +50,6 @@ export function LoginClient({ csrfToken }: csrfTokenProps) {
         router.push('/dashboard');
     }, [state, router]);
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         if (state?.retryAfterSeconds) setSecondsLeft(state.retryAfterSeconds);
     }, [state?.retryAfterSeconds]);
     useEffect(() => {
