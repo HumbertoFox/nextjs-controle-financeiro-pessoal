@@ -214,6 +214,21 @@ export const userRepository = {
     },
 
     // -------------------------------------------------------------------------
+    // Busca session_version para validação de sessão
+    // -------------------------------------------------------------------------
+    async findSessionVersion(id: string, client?: QueryExecutor): Promise<{ session_version: number } | null> {
+        const executor = client ?? pool;
+        const result = await executor.query<{ session_version: number }>(`
+            SELECT session_version
+            FROM users_active
+            WHERE id = $1
+        `,
+            [id]
+        );
+        return result.rows[0] ?? null;
+    },
+
+    // -------------------------------------------------------------------------
     // Criação de usuário
     // -------------------------------------------------------------------------
     async create(data: {
@@ -364,21 +379,6 @@ export const userRepository = {
             RETURNING ${USER_PUBLIC_COLUMNS}
         `,
             [email, hashedPassword]
-        );
-        return result.rows[0] ?? null;
-    },
-
-    // -------------------------------------------------------------------------
-    // Busca session_version para validação de sessão
-    // -------------------------------------------------------------------------
-    async findSessionVersion(id: string, client?: QueryExecutor): Promise<{ session_version: number } | null> {
-        const executor = client ?? pool;
-        const result = await executor.query<{ session_version: number }>(`
-            SELECT session_version
-            FROM users
-            WHERE id = $1 AND deleted_at IS NULL
-        `,
-            [id]
         );
         return result.rows[0] ?? null;
     },

@@ -2,11 +2,11 @@ import Heading from '@/_components/heading';
 import { Separator } from '@/_components/ui/separator';
 import { type PropsWithChildren } from 'react';
 import SettingsLayoutClient from './settings-layout-client';
-import { UserProfilePageProps } from '@/_types';
 import { getUser } from '@/_lib/dal';
+import { UserPublic } from '@/_types';
 
 export default async function SettingsLayout({ children }: PropsWithChildren) {
-    const userActive = await getUser() as UserProfilePageProps;
+    const userActive = await getUser() as UserPublic;
     return (
         <>
             <Heading
