@@ -9,6 +9,7 @@ import z from 'zod';
 import { regenerateCsrfToken, validateCsrfToken } from '@/_lib/csrf';
 import { hashToken } from '@/_lib/tokenutils';
 import { checkForgotPasswordRateLimit } from '@/_lib/ratelimit';
+import { getTransactionClient } from '@/_lib/db';
 
 export async function forgotPassword(_: FormStatePasswordForgot, formData: FormData): Promise<FormStatePasswordForgot> {
     const csrfToken = formData.get('csrfToken') as string;
@@ -28,40 +29,54 @@ export async function forgotPassword(_: FormStatePasswordForgot, formData: FormD
         return { error: `Muitas tentativas. Por favor, tente novamente em ${timeLabel}.` };
     }
 
-    const user = await userRepository.findByEmail(email);
-
     const genericMessage = {
         message: 'Se o seu e-mail estiver cadastrado, você receberá um link para redefinir sua senha.'
     };
 
-    if (!user) return genericMessage;
+    const client = await getTransactionClient();
 
-    const tokenExisting = await verificationTokenRepository.findByIdentifier(email);
+    try {
+        await client.query('BEGIN');
 
-    if (!tokenExisting) {
+        const user = await userRepository.findByEmail(email, client);
+
+        if (!user) {
+            await client.query('ROLLBACK')
+            return genericMessage;
+        }
+
+        const tokenExisting = await verificationTokenRepository.findByIdentifier(email, client);
+
+        if (tokenExisting) {
+            await client.query('ROLLBACK');
+            return genericMessage;
+        }
+
         const rawToken = crypto.randomBytes(32).toString('hex');
         const expires_at = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+
+        await verificationTokenRepository.deleteByIdentifier(email, client);
+        await verificationTokenRepository.create({
+            identifier: email, token: hashToken(rawToken), expires_at
+        }, client);
 
         const resetLink = `${process.env.NEXT_URL}/reset-password?token=${rawToken}`;
         const response = await sendPasswordResetEmail(email, resetLink);
 
         if (!response.ok) {
             console.error("Error sending verification email:", response.error);
-            return { error: 'email-send-error' };
+            throw new Error('EMAIL_SEND_FAILED');
         }
 
-        await verificationTokenRepository.deleteByIdentifier(email);
-        await verificationTokenRepository.create({
-            identifier: email,
-            token: hashToken(rawToken),
-            expires_at
-        });
-
-        await regenerateCsrfToken();
+        await client.query('COMMIT');
+    } catch (error) {
+        await client.query('ROLLBACK');
+        if (!(error instanceof Error && error.message === 'EMAIL_SEND_FAILED')) console.error(error);
         return genericMessage;
+    } finally {
+        client.release();
     }
 
     await regenerateCsrfToken();
-
     return genericMessage;
 }

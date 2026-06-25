@@ -1,6 +1,7 @@
 'use server';
 
 import { regenerateCsrfToken, validateCsrfToken } from '@/_lib/csrf';
+import { getTransactionClient } from '@/_lib/db';
 import { FormStatePasswordReset, passwordResetSchema } from '@/_lib/definitions';
 import { hashToken } from '@/_lib/tokenutils';
 import { userRepository } from '@/_lib/userrepositorys';
@@ -25,17 +26,34 @@ export async function resetPassword(_: FormStatePasswordReset, formData: FormDat
 
     const hashedToken = hashToken(token);
 
-    const tokenRecord = await verificationTokenRepository.findValidTokenOnly(hashedToken);
+    const client = await getTransactionClient();
 
-    if (!tokenRecord) return { warning: 'Token inválido ou expirado.' };
+    try {
+        await client.query('BEGIN');
 
-    const email = tokenRecord.identifier;
+        const tokenRecord = await verificationTokenRepository.findValidTokenOnly(hashedToken, client);
 
-    const hashedPassword = await hash(password, 12);
+        if (!tokenRecord) {
+            await client.query('ROLLBACK');
+            return { warning: 'Token inválido ou expirado.' };
+        }
 
-    await userRepository.updatePasswordByEmail(email, hashedPassword);
+        const email = tokenRecord.identifier;
 
-    await verificationTokenRepository.delete(email, hashedToken);
+        const hashedPassword = await hash(password, 12);
+
+        await userRepository.updatePasswordByEmail(email, hashedPassword, client);
+
+        await verificationTokenRepository.delete(email, hashedToken, client);
+
+        await client.query('COMMIT');
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error(error);
+        return { warning: 'Algo deu errado. Por favor, tente novamente mais tarde.' };
+    } finally {
+        client.release();
+    }
 
     await regenerateCsrfToken();
 

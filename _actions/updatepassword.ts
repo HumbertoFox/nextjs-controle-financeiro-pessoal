@@ -8,10 +8,13 @@ import z from 'zod';
 import { userRepository } from '@/_lib/userrepositorys';
 import { revalidatePath } from 'next/cache';
 import { regenerateCsrfToken, validateCsrfToken } from '@/_lib/csrf';
+import { getTransactionClient } from '@/_lib/db';
+import { User, UserRole } from '@/_types';
+import { createSession } from '@/_lib/session';
 
 export async function updatePassword(_: FormStatePasswordUpdate, formData: FormData): Promise<FormStatePasswordUpdate> {
     const sessionUser = await getUser();
-    if (!sessionUser || !sessionUser?.id) return redirect('/');
+    if (!sessionUser || !sessionUser?.id) return redirect('/logout');
 
     const csrfToken = formData.get('csrfToken') as string;
     const isValidCsrf = await validateCsrfToken(csrfToken);
@@ -27,19 +30,54 @@ export async function updatePassword(_: FormStatePasswordUpdate, formData: FormD
 
     const { current_password, password } = validatedFields.data;
 
-    const authUser = await userRepository.findActiveById(sessionUser.id);
+    const client = await getTransactionClient();
+    let authUser: User;
+    let userRole: UserRole;
 
-    if (!authUser) return redirect('/');
 
-    const isValid = await compare(current_password, authUser.password);
+    try {
+        await client.query('BEGIN');
 
-    if (!isValid) return { errors: { current_password: ['A senha atual está incorreta.'] } };
+        authUser = await userRepository.findActiveById(sessionUser.id, client);
 
-    if (current_password === password) return { errors: { password: ['A nova senha não pode ser igual à antiga.'] } };
+        if (!authUser) {
+            await client.query('ROLLBACK');
+            return redirect('/logout');
+        }
 
-    const hashedPassword = await hash(password, 12);
+        const isValid = await compare(current_password, authUser.password);
 
-    await userRepository.updatePassword(sessionUser.id, hashedPassword);
+        if (!isValid) {
+            await client.query('ROLLBACK');
+            return { errors: { current_password: ['A senha atual está incorreta.'] } };
+        }
+
+        if (current_password === password) {
+            await client.query('ROLLBACK');
+            return { errors: { password: ['A nova senha não pode ser igual à antiga.'] } };
+        }
+
+        const hashedPassword = await hash(password, 12);
+
+        await userRepository.updatePassword(sessionUser.id, hashedPassword, client);
+
+        userRole = authUser.role;
+
+        await client.query('COMMIT');
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error(error);
+        return { errors: { current_password: ['Algo deu errado. Por favor, tente novamente mais tarde.'] } };
+    } finally {
+        client.release();
+    }
+
+    try {
+        const sessionVerssion = await userRepository.incrementSessionVersion(authUser.id, client);
+        await createSession(authUser.id, userRole, sessionVerssion);
+    } catch (sessionError) {
+        console.error('Failed to reissue session after password update:', sessionError);
+    }
 
     revalidatePath('/dashboard/settings/password');
 

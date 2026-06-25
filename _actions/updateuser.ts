@@ -8,9 +8,7 @@ import { put, del } from '@vercel/blob';
 import { userRepository } from '@/_lib/userrepositorys';
 import { revalidatePath } from 'next/cache';
 import { regenerateCsrfToken, validateCsrfToken } from '@/_lib/csrf';
-import { MIME_TO_EXT } from '@/_types';
-
-const MAX_FILE_SIZE = 512 * 1024;
+import { MAX_FILE_SIZE, MIME_TO_EXT } from '@/_types';
 
 export async function updateUser(_: FormStateUserUpdate, formData: FormData): Promise<FormStateUserUpdate> {
     const sessionUser = await getUser();
