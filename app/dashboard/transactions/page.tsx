@@ -43,15 +43,13 @@ export default async function TransactionsPage() {
                     </p>
                     
                     <div className="flex items-center gap-2">
-                        <DialogAddAccount userId={userActive.id} />
+                        <DialogAddAccount />
 
                         <DialogAddCategory
-                            userId={userActive.id}
                             categories={categories}
                         />
 
                         <DialogAddTransaction
-                            userId={userActive.id}
                             accounts={accounts}
                             categories={categories}
                         />

@@ -114,12 +114,10 @@ export type TransactionsPaginated = {
 }
 
 export type DialogAddCategoryProps = {
-    readonly userId: string;
     categories: CategoryFlat[];
 }
 
 export type DialogAddTransactionProps = {
-    readonly userId: string;
     accounts: Account[];
     categories: CategoryFlat[];
 }

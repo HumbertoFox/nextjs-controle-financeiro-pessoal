@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { createAccountAction } from '@/_actions/createaccount';
 import { AccountType, accountTypeLabel } from '@/_types';
 
-export function DialogAddAccount({ userId }: { userId: string }) {
+export function DialogAddAccount() {
     const [open, setOpen] = useState(false);
     const [isPending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
@@ -35,11 +35,14 @@ export function DialogAddAccount({ userId }: { userId: string }) {
                     <DialogTitle>Nova conta</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-2">
-                    <input type="hidden" name="userId" value={userId} />
-
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="name">Nome</Label>
-                        <Input id="name" name="name" placeholder="Ex: Nubank" required />
+                        <Input
+                            id="name"
+                            name="name"
+                            placeholder="Ex: Nubank"
+                            required
+                        />
                     </div>
 
                     <div className="flex flex-col gap-1.5">

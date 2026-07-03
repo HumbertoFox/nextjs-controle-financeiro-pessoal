@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { createCategoryAction } from '@/_actions/createcategory';
 import { DialogAddCategoryProps, TransactionType, TransactionTypeZod } from '@/_types';
 
-export function DialogAddCategory({ userId, categories }: DialogAddCategoryProps) {
+export function DialogAddCategory({ categories }: DialogAddCategoryProps) {
     const [open, setOpen] = useState(false);
     const [isPending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
@@ -60,8 +60,6 @@ export function DialogAddCategory({ userId, categories }: DialogAddCategoryProps
                     <DialogTitle>Nova categoria</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-2">
-                    <input type="hidden" name="userId" value={userId} />
-
                     {/* Tipo */}
                     <div className="grid grid-cols-2 gap-2">
                         {TransactionTypeZod.map((t) => (
