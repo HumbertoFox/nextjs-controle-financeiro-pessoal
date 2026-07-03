@@ -9,6 +9,8 @@ import { Input } from '@/_components/ui/input';
 import { Label } from '@/_components/ui/label';
 import { forgotPassword } from '@/_actions/forgotpassword';
 import { csrfTokenProps } from '@/_types';
+import Link from 'next/link';
+import AppLogoIconSvg from '@/_components/app-logo-icon-svg';
 
 export default function ForgotPasswordClient({ csrfToken }: csrfTokenProps) {
     const [state, action, pending] = useActionState(forgotPassword, undefined);
@@ -27,6 +29,12 @@ export default function ForgotPasswordClient({ csrfToken }: csrfTokenProps) {
     return (
         <div className="space-y-6 w-full 2xl:w-2/4">
             <div className="flex flex-col items-center gap-2 text-center mx-auto">
+                <Link
+                    href="/"
+                    className="size-16 dark:invert 2xl:hidden rounded-full"
+                >
+                    <AppLogoIconSvg className="rounded-full" />
+                </Link>
                 <h1 className="text-xl font-medium">Esqueceu sua senha?</h1>
                 <p className="text-muted-foreground text-sm text-balance">Insira seu e-mail para receber um link para redefinir sua senha.</p>
             </div>

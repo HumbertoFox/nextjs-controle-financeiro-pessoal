@@ -3,7 +3,7 @@ import { getCsrfToken } from '@/_lib/csrf';
 import InviteAcceptClient from './invite-accept-client';
 import { InviteAcceptPageProps } from '@/_types';
 import { Suspense } from 'react';
-import LoadingInviteAccept from '@/_components/loadings/loading-invite-accept';
+import { LoadingInviteAccept } from '@/_components/loadings/loading-invite-accept';
 import { Metadata } from 'next';
 
 export const generateMetadata = async (): Promise<Metadata> => {

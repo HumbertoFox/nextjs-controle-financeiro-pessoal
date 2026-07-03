@@ -11,6 +11,8 @@ import { resetPassword } from '@/_actions/resetpassword';
 import { csrfTokenProps, ResetPasswordForm } from '@/_types';
 import { TextLink } from '@/_components/text-link';
 import { PasswordChecklist } from '@/_components/password-checklist';
+import Link from 'next/link';
+import AppLogoIconSvg from '@/_components/app-logo-icon-svg';
 
 export default function ResetPasswordClient({ csrfToken }: csrfTokenProps) {
     const searchParams = useSearchParams();
@@ -41,6 +43,12 @@ export default function ResetPasswordClient({ csrfToken }: csrfTokenProps) {
     return (
         <div className="space-y-6 w-full 2xl:w-2/4">
             <div className="flex flex-col items-center gap-2 text-center mx-auto">
+                <Link
+                    href="/"
+                    className="size-16 dark:invert 2xl:hidden rounded-full"
+                >
+                    <AppLogoIconSvg className="rounded-full" />
+                </Link>
                 <h1 className="text-xl font-medium">Redefinir senha</h1>
                 <p className="text-muted-foreground text-sm text-balance">
                     Por favor, insira sua nova senha abaixo.

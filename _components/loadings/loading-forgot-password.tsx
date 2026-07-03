@@ -2,19 +2,30 @@
 
 import { Skeleton } from '@/_components/ui/skeleton';
 
-export default function LoadingForgotPassword() {
+export function LoadingForgotPassword() {
     return (
-        <div className="space-y-6 w-full 2xl:w-2/4">
-            <div className="flex flex-col items-center gap-2 text-center mx-auto">
-                <Skeleton className="w-52 h-7" />
-                <Skeleton className="w-88 h-5" />
+        <div className="w-full 2xl:w-2/4 2xl:p-8">
+            <div className="mx-auto flex w-full flex-col items-center gap-8 sm:w-72">
+
+                <div className="grid gap-2">
+                    <Skeleton className="size-16 2xl:hidden rounded-full mx-auto mb-4" />
+                    <Skeleton className="w-52 h-5 mx-auto" />
+                    <Skeleton className="w-88 h-3.5" />
+                </div>
+
+                <div className="grid gap-2">
+                    <Skeleton className="w-28 h-3.5" />
+                    <Skeleton className="w-88 h-9" />
+                </div>
+
+                <div className="grid gap-2">
+                    <Skeleton className="w-88 h-9" />
+                </div>
+
+                <div className="grid gap-2">
+                    <Skeleton className="w-36 h-5 mx-auto" />
+                </div>
             </div>
-            <div className="space-y-2">
-                <Skeleton className="w-28 h-3.5" />
-                <Skeleton className="w-88 h-9" />
-            </div>
-            <Skeleton className="w-88 h-9" />
-            <Skeleton className="w-36 h-5 mx-auto" />
         </div>
     );
 }

@@ -7,6 +7,8 @@ import { Input } from '@/_components/ui/input';
 import { Label } from '@/_components/ui/label';
 import { acceptInvite } from '@/_actions/acceptinvite';
 import { InviteAcceptClientProps } from '@/_types';
+import Link from 'next/link';
+import AppLogoIconSvg from '@/_components/app-logo-icon-svg';
 
 export default function InviteAcceptClient({ email, token, csrfToken }: InviteAcceptClientProps) {
     const [state, action, pending] = useActionState(acceptInvite, undefined);
@@ -22,9 +24,15 @@ export default function InviteAcceptClient({ email, token, csrfToken }: InviteAc
     return (
         <div className="space-y-6 w-full 2xl:w-2/4">
             <div className="flex flex-col items-center gap-2 text-center mx-auto">
-                <h1 className="text-xl font-medium">Family invite</h1>
+                <Link
+                    href="/"
+                    className="size-16 dark:invert 2xl:hidden rounded-full"
+                >
+                    <AppLogoIconSvg className="rounded-full" />
+                </Link>
+                <h1 className="text-xl font-medium">Convite para a família</h1>
                 <p className="text-muted-foreground text-sm text-balance">
-                    Accepting invite for <span className="font-medium text-foreground">{email}</span>.
+                    Aceitando convite para <span className="font-medium text-foreground">{email}</span>.
                 </p>
             </div>
 
@@ -40,7 +48,7 @@ export default function InviteAcceptClient({ email, token, csrfToken }: InviteAc
 
             <div className="w-full max-w-xs flex flex-col gap-6 mx-auto">
                 <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">E-mail</Label>
                     <Input
                         id="email"
                         type="email"
@@ -54,7 +62,7 @@ export default function InviteAcceptClient({ email, token, csrfToken }: InviteAc
                     href={isAccepted ? '/dashboard' : '/login'}
                     className="mx-auto block text-sm"
                 >
-                    {isAccepted ? 'Go to dashboard' : 'Log in'}
+                    {isAccepted ? 'Ir para o painel' : 'Conecte-se'}
                 </TextLink>
             </div>
         </div>

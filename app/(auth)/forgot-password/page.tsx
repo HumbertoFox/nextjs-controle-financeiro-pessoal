@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import LoadingForgotPassword from '@/_components/loadings/loading-forgot-password';
+import { LoadingForgotPassword } from '@/_components/loadings/loading-forgot-password';
 import ForgotPasswordClient from './forgot-password-client';
 import { Metadata } from 'next';
 import { getCsrfToken } from '@/_lib/csrf';
