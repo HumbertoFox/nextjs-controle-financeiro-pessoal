@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import PasswordPageClient from './password-client';
-import LoadingPassword from '@/_components/loadings/loading-password';
+import { LoadingPassword } from '@/_components/loadings/loading-password';
 import { Suspense } from 'react';
 import { getCsrfToken } from '@/_lib/csrf';
 

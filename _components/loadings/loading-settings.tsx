@@ -2,7 +2,7 @@
 
 import { Skeleton } from '@/_components/ui/skeleton';
 
-export default function LoadingSettings() {
+export function LoadingSettings() {
     return (
         <>
             <div className="flex flex-1 gap-4">

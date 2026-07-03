@@ -18,7 +18,6 @@ export default function VerifyEmailSettingsClient({ csrfToken }: csrfTokenProps)
     const [state, action, pending] = useActionState(handleEmailVerification, undefined);
     const [resendState, resendAction, resendPending] = useActionState(emailVerifiedChecked, undefined);
 
-    // Submete automaticamente quando chega com token na URL
     useEffect(() => {
         if (email && token) {
             const formData = new FormData();

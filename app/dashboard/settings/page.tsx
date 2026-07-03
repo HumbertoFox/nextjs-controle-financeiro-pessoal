@@ -1,7 +1,7 @@
 import { getUser } from '@/_lib/dal';
 import SettingsPageClient from './settings-client';
 import { Metadata } from 'next';
-import LoadingSettings from '@/_components/loadings/loading-settings';
+import { LoadingSettings } from '@/_components/loadings/loading-settings';
 import { Suspense } from 'react';
 import { userRepository } from '@/_lib/userrepositorys';
 import { UserPublic } from '@/_types';

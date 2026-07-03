@@ -48,7 +48,7 @@ export default function RegisterUpdateUserForm({ user, isEdit, titleForm, valueB
             <div className="flex flex-col items-center gap-2 text-center mx-auto">
                 <h1 className="text-xl font-medium">{titleForm}</h1>
                 <p className="text-muted-foreground text-sm text-balance">
-                    {`Enter ${isEdit ? 'user' : 'the'} details below to ${isEdit ? 'update' : 'create an'} account.`}
+                    {`Insira os detalhes abaixo para ${isEdit ? 'atualizar' : 'criar uma'} conta.`}
                 </p>
                 {state?.warning && <p className="mb-4 text-center text-sm font-medium text-orange-400">{state.warning}</p>}
             </div>
@@ -62,7 +62,7 @@ export default function RegisterUpdateUserForm({ user, isEdit, titleForm, valueB
                             htmlFor="file"
                             className="mx-auto"
                         >
-                            Profile picture &#40;optional&#41;
+                            Foto de perfil &#40;opcional&#41;
                         </Label>
                         <div className="flex flex-col items-center gap-3">
                             <div className="relative w-24 h-24 rounded-full overflow-hidden border border-gray-300">
@@ -76,17 +76,17 @@ export default function RegisterUpdateUserForm({ user, isEdit, titleForm, valueB
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-sm text-gray-400 bg-gray-50">
-                                        No image
+                                        Sem imagem
                                     </div>
                                 )}
                             </div>
 
                             <Label
                                 htmlFor="file"
-                                title={imageError ? "Click on Select image and then Cancel." : "Select profile picture"}
-                                className="cursor-pointer px-3 py-1 text-sm border rounded-md hover:bg-gray-50"
+                                title={imageError ? "Clique em Selecionar imagem e depois em Cancelar." : "Selecione a foto do perfil"}
+                                className="cursor-pointer px-3 py-1 text-sm border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800"
                             >
-                                Select image
+                                Selecione a imagem
                             </Label>
                             <Input
                                 id="file"
@@ -122,7 +122,7 @@ export default function RegisterUpdateUserForm({ user, isEdit, titleForm, valueB
                     )}
 
                     <div className="grid gap-2">
-                        <Label htmlFor="name">Name</Label>
+                        <Label htmlFor="name">Nome</Label>
                         <Input
                             id="name"
                             name="name"
@@ -134,13 +134,13 @@ export default function RegisterUpdateUserForm({ user, isEdit, titleForm, valueB
                             value={data.name}
                             onChange={handleChange}
                             disabled={pending}
-                            placeholder="Full name"
+                            placeholder="Nome completo"
                         />
                         {state?.errors?.name?.[0] && <InputError message={state.errors.name[0]} />}
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Email address</Label>
+                        <Label htmlFor="email">Endereço de email</Label>
                         <Input
                             id="email"
                             name="email"
@@ -152,13 +152,13 @@ export default function RegisterUpdateUserForm({ user, isEdit, titleForm, valueB
                             value={data.email}
                             onChange={handleChange}
                             disabled={pending}
-                            placeholder="email@exemple.com"
+                            placeholder="email@exemplo.com"
                         />
                         {state?.errors?.email?.[0] && <InputError message={state.errors.email[0]} />}
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password">Senha</Label>
                         <div className="relative">
                             <Input
                                 id="password"
@@ -170,11 +170,11 @@ export default function RegisterUpdateUserForm({ user, isEdit, titleForm, valueB
                                 value={data.password}
                                 onChange={handleChange}
                                 disabled={pending}
-                                placeholder="Password"
+                                placeholder="Senha"
                             />
                             <button
                                 type="button"
-                                title={showPassword ? "Hide password" : "Show password"}
+                                title={showPassword ? "Ocultar senha" : "Mostrar senha"}
                                 onClick={toggleShowPassword}
                                 className="btn-icon-toggle"
                             >
@@ -186,7 +186,7 @@ export default function RegisterUpdateUserForm({ user, isEdit, titleForm, valueB
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="password_confirmation">Confirm your password.</Label>
+                        <Label htmlFor="password_confirmation">Confirme sua senha.</Label>
                         <div className="relative">
                             <Input
                                 id="password_confirmation"
@@ -198,11 +198,11 @@ export default function RegisterUpdateUserForm({ user, isEdit, titleForm, valueB
                                 value={data.password_confirmation}
                                 onChange={handleChange}
                                 disabled={pending}
-                                placeholder="Confirm your password."
+                                placeholder="Confirme sua senha."
                             />
                             <button
                                 type="button"
-                                title={showPasswordConfirm ? "Hide password" : "Show password"}
+                                title={showPasswordConfirm ? "Ocultar senha" : "Mostrar senha"}
                                 onClick={toggleShowPasswordConfirm}
                                 className="btn-icon-toggle"
                             >
@@ -213,7 +213,7 @@ export default function RegisterUpdateUserForm({ user, isEdit, titleForm, valueB
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="role">Account type</Label>
+                        <Label htmlFor="role">Tipo de conta</Label>
                         <Select
                             required
                             value={data.role}
@@ -223,10 +223,10 @@ export default function RegisterUpdateUserForm({ user, isEdit, titleForm, valueB
                             <SelectTrigger
                                 id="role"
                                 name="role"
-                                title="Select the account type."
+                                title="Selecione o tipo de conta."
                                 tabIndex={6}
                             >
-                                <SelectValue placeholder="Account type" />
+                                <SelectValue placeholder="Tipo de conta" />
                             </SelectTrigger>
                             <SelectContent>
                                 {Object.entries(roleLabels).map(([value, label]) => (
@@ -246,7 +246,7 @@ export default function RegisterUpdateUserForm({ user, isEdit, titleForm, valueB
 
                     {data.role === 'MEMBER' && (
                         <div className="grid gap-2">
-                            <Label htmlFor="family_name">Family name</Label>
+                            <Label htmlFor="family_name">Nome da família</Label>
                             <Input
                                 id="family_name"
                                 name="family_name"
@@ -258,7 +258,7 @@ export default function RegisterUpdateUserForm({ user, isEdit, titleForm, valueB
                                 value={data.family_name ?? ''}
                                 onChange={handleChange}
                                 disabled={pending}
-                                placeholder="Family name"
+                                placeholder="Nome da família"
                                 className={isEdit ? 'cursor-no-drop' : ''}
                             />
                             {state?.errors?.family_name?.[0] && <InputError message={state.errors.family_name[0]} />}

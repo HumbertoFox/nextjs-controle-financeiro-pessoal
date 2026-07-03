@@ -2,7 +2,7 @@
 
 import { Skeleton } from '@/_components/ui/skeleton';
 
-export default function LoadingSettingsProfile() {
+export function LoadingSettingsProfile() {
     return (
         <>
             <div className="space-y-6">

@@ -2,7 +2,7 @@
 
 import { Skeleton } from '@/_components/ui/skeleton';
 
-export default function LoadingPassword() {
+export function LoadingPassword() {
     return (
         <div className="space-y-6">
             <div className="mb-8 my-1 space-y-0.5">

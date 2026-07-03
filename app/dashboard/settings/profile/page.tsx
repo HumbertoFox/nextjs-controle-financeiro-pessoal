@@ -2,7 +2,7 @@ import { getUser } from '@/_lib/dal';
 import { ProfilePageClient } from './profile-client';
 import { UserProfilePageProps } from '@/_types';
 import { Metadata } from 'next';
-import LoadingProfile from '@/_components/loadings/loading-profile';
+import { LoadingProfile } from '@/_components/loadings/loading-profile';
 import { Suspense } from 'react';
 import { getCsrfToken } from '@/_lib/csrf';
 

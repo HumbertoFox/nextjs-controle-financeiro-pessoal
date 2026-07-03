@@ -2,7 +2,7 @@
 
 import { Skeleton } from '@/_components/ui/skeleton';
 
-export default function LoadingSettingsVerifyEmail() {
+export function LoadingSettingsVerifyEmail() {
     return (
         <>
             <div className="flex flex-col gap-8">

@@ -2,7 +2,7 @@ import { getUser } from '@/_lib/dal';
 import FamilyPageClient from './family-client';
 import { Metadata } from 'next';
 import { Suspense } from 'react';
-import LoadingSettings from '@/_components/loadings/loading-settings';
+import { LoadingSettings } from '@/_components/loadings/loading-settings';
 import { userRepository } from '@/_lib/userrepositorys';
 import { UserPublic } from '@/_types';
 import { redirect } from 'next/navigation';
