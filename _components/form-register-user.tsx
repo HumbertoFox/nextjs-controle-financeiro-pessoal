@@ -1,7 +1,7 @@
 'use client';
 
 import { Eye, EyeClosed, LoaderCircle } from 'lucide-react';
-import { startTransition, useActionState, useRef, useState } from 'react';
+import { ChangeEvent, startTransition, SubmitEvent, useActionState, useRef, useState } from 'react';
 import { InputError } from '@/_components/input-error';
 import { Button } from '@/_components/ui/button';
 import { Input } from '@/_components/ui/input';
@@ -23,11 +23,11 @@ export default function RegisterUpdateUserForm({ user, isEdit, titleForm, valueB
     const [showPasswordConfirm, setShowPasswordConfirm] = useState<boolean>(false);
     const [data, setData] = useState<UserFormProps>({ id: user?.id ?? '', name: user?.name ?? '', email: user?.email ?? '', family_name: user?.family_name ?? '', role: user?.role ?? 'INDIVIDUAL', password: '', password_confirmation: '', avatar: user?.avatar ?? undefined });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
         setData({ ...data, [id]: value });
     };
-    const onImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const onImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
         const { file, preview, error } = await handleImageChange(e);
         setImageFile(file);
         setImagePreview(preview);
@@ -35,7 +35,7 @@ export default function RegisterUpdateUserForm({ user, isEdit, titleForm, valueB
     };
     const toggleShowPassword = () => setShowPassword(prev => !prev);
     const toggleShowPasswordConfirm = () => setShowPasswordConfirm(prev => !prev);
-    const submit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+    const submit = async (e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (imageError) return;
         const formData = new FormData(e.currentTarget);
@@ -111,7 +111,6 @@ export default function RegisterUpdateUserForm({ user, isEdit, titleForm, valueB
                                 name="id"
                                 type="text"
                                 required={isEdit}
-                                autoComplete="id"
                                 value={data.id}
                                 onChange={handleChange}
                                 disabled={pending}
@@ -230,7 +229,10 @@ export default function RegisterUpdateUserForm({ user, isEdit, titleForm, valueB
                             </SelectTrigger>
                             <SelectContent>
                                 {Object.entries(roleLabels).map(([value, label]) => (
-                                    <SelectItem key={value} value={value}>
+                                    <SelectItem
+                                        key={value}
+                                        value={value}
+                                    >
                                         {label}
                                     </SelectItem>
                                 ))}

@@ -1,4 +1,4 @@
-import { UserRolesZod } from '@/_types';
+import { AccountTypeZod, UserRolesZod } from '@/_types';
 import * as z from 'zod';
 
 const passwordSchema = z.string()
@@ -141,6 +141,17 @@ export const passwordForgotSchema = z.object({
         .max(254, 'Email must be at most 254 characters long.')
 });
 
+export const createAccountActionSharm = z.object({
+    name: z.string()
+        .min(1, 'O nome da conta é obrigatório.')
+        .max(50, 'O nome da conta deve ter no máximo 50 caracteres!'),
+    type: z.enum(AccountTypeZod, {
+        error: 'Valor inválido para o tipo de conta.'
+    }),
+    initialBalance: z.number()
+        .min(0, 'O saldo inicial deve ser um valor positivo!')
+});
+
 export type FormStateCreateAdmin =
     | {
         errors?: {
@@ -270,4 +281,15 @@ export type FormStateRemoveMember =
     | {
         warning?: string;
         message?: string;
+    } | undefined;
+
+export type FormcreateAccountAction =
+    | {
+        errors?: {
+            name?: string[];
+            type?: string[];
+            initialBalance?: string[];
+        }
+        success?: string;
+        error?: string;
     } | undefined;

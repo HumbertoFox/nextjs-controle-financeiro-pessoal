@@ -2,30 +2,35 @@
 
 import { accountRepository } from '@/_lib/accountrepository';
 import { getUser } from '@/_lib/dal';
-import { AccountType, AccountTypeZod } from '@/_types';
+import { createAccountActionSharm, FormcreateAccountAction } from '@/_lib/definitions';
+import { AccountType } from '@/_types';
 import { revalidatePath } from 'next/cache';
+import z from 'zod';
 
-export async function createAccountAction(fd: FormData) {
+export async function createAccountAction(_: FormcreateAccountAction, formData: FormData): Promise<FormcreateAccountAction> {
     const user = await getUser();
     if (!user) return { error: 'Não autorizado.' };
 
-    const name = (fd.get('name') as string)?.trim();
-    const type = fd.get('type') as AccountType;
-    const initialBalance = parseFloat(fd.get('initialBalance') as string);
+    const validatedFields = createAccountActionSharm.safeParse({
+        name: (formData.get('name') as string)?.trim(),
+        type: formData.get('type') as AccountType,
+        initialBalance: parseFloat(formData.get('initialBalance') as string)
+    });
 
-    if (!name) return { error: 'Nome obrigatório.' };
-    if (!AccountTypeZod.includes(type)) return { error: 'Tipo inválido.' };
-    if (isNaN(initialBalance)) return { error: 'Saldo inicial inválido.' };
+    if (!validatedFields.success) return { errors: z.flattenError(validatedFields.error).fieldErrors };
+
+    const data = validatedFields.data;
 
     try {
-        const existing = await accountRepository.findByUserIdAndNameAndType(user.id, name, type);
+        const existing = await accountRepository.findByUserIdAndNameAndType(user.id, data.name, data.type);
         if (existing) return { error: 'Já existe uma conta com esse nome e tipo.' };
 
         await accountRepository.create({
-            userId: user.id, name, type, initialBalance
+            userId: user.id, name: data.name, type: data.type, initialBalance: data.initialBalance
         });
+
         revalidatePath('/dashboard/transactions');
-        return {};
+        return { success: 'Conta criada com sucesso.' };
     } catch {
         return { error: 'Erro ao criar conta.' };
     }

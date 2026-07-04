@@ -1,6 +1,6 @@
 'use client';
 
-import { startTransition, useActionState, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, startTransition, SubmitEvent, useActionState, useEffect, useRef, useState } from 'react';
 import { Button } from '@/_components/ui/button';
 import { Input } from '@/_components/ui/input';
 import { Label } from '@/_components/ui/label';
@@ -17,19 +17,20 @@ export default function DeleteUser({ csrfToken }: { csrfToken?: string; }) {
     const [showPassword, setshowPassword] = useState<boolean>(false);
     const [data, setData] = useState<{ password: string }>({ password: '' });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
         setData({ ...data, [id]: value });
     };
     const toggleShowPassword = () => setshowPassword(!showPassword);
 
-    const submit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const submit = async (e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData();
         formData.append('password', data.password);
         if (csrfToken) formData.append('csrfToken', csrfToken);
         startTransition(() => action(formData));
     };
+    
     const handleClose = () => setData({ password: '' });
 
     useEffect(() => {
