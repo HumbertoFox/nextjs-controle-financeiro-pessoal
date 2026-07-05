@@ -142,7 +142,7 @@ export const passwordForgotSchema = z.object({
 });
 
 export const createAccountActionSchema = z.object({
-    name: z.string()
+    name: z.string({ error: 'O nome da conta é obrigatório.' })
         .min(1, 'O nome da conta é obrigatório.')
         .max(50, 'O nome da conta deve ter no máximo 50 caracteres!'),
     type: z.enum(AccountTypeZod, {
@@ -150,16 +150,32 @@ export const createAccountActionSchema = z.object({
     }),
     initialBalance: z.number()
         .min(0, 'O saldo inicial deve ser um valor positivo!')
+        .multipleOf(0.01, "O valor deve ter no máximo 2 casas decimais.")
 });
 
 export const createCategoryActionSchema = z.object({
-    name: z.string()
+    name: z.string({ error: 'O nome da categoria é obrigatório.' })
         .min(1, 'O nome da categoria é obrigatório.')
         .max(100, 'O nome da categoria deve ter no máximo 100 caracteres!'),
     type: z.enum(TransactionTypeZod, {
         error: 'Valor inválido para o tipo de transação.'
     }),
     parentId: z.uuid({ error: 'Invalid parent category ID.' })
+        .nullable()
+});
+
+export const createTransactionActionSchema = z.object({
+    accountId: z.uuid({ error: 'O ID da conta é obrigatório!' }),
+    categoryId: z.uuid({ error: 'O ID da categoria é obrigatório!' }),
+    type: z.enum(TransactionTypeZod, {
+        error: 'Valor inválido para o tipo de transação.'
+    }),
+    value: z.number()
+        .min(0, 'O saldo inicial deve ser um valor positivo!')
+        .multipleOf(0.01, "O valor deve ter no máximo 2 casas decimais."),
+    transactionDate: z.string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato inválido (YYYY-MM-DD)'),
+    description: z.string({ error: 'Descrição inválida' })
         .nullable()
 });
 
@@ -294,7 +310,7 @@ export type FormStateRemoveMember =
         message?: string;
     } | undefined;
 
-export type FormcreateAccountAction =
+export type FormStateCreateAccountAction =
     | {
         errors?: {
             name?: string[];
@@ -305,12 +321,26 @@ export type FormcreateAccountAction =
         error?: string;
     } | undefined;
 
-export type FormcreateCategoryAction =
+export type FormStateCreateCategoryAction =
     | {
         errors?: {
             name?: string[];
             type?: string[];
             parentId?: string[];
+        }
+        success?: string;
+        error?: string;
+    } | undefined;
+
+export type FormStateCreateTransactionAction =
+    | {
+        errors?: {
+            accountId?: string[];
+            categoryId?: string[];
+            type?: string[];
+            value?: string[];
+            transactionDate?: string[];
+            description?: string[];
         }
         success?: string;
         error?: string;

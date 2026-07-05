@@ -1,33 +1,41 @@
 'use server';
 
 import { getUser } from '@/_lib/dal';
+import { createTransactionActionSchema, FormStateCreateTransactionAction } from '@/_lib/definitions';
 import { transactionRepository } from '@/_lib/transactionrepository';
-import { isValidUUID } from '@/_lib/useful';
-import { TransactionType, TransactionTypeZod } from '@/_types';
+import { TransactionType } from '@/_types';
 import { revalidatePath } from 'next/cache';
+import z from 'zod';
 
-export async function createTransactionAction(fd: FormData) {
+export async function createTransactionAction(_: FormStateCreateTransactionAction, formData: FormData): Promise<FormStateCreateTransactionAction> {
     const user = await getUser();
     if (!user) return { error: 'Não autorizado.' };
 
-    const accountId = fd.get('accountId') as string;
-    const categoryId = fd.get('categoryId') as string;
-    const type = fd.get('type') as TransactionType;
-    const value = parseFloat(fd.get('value') as string);
-    const transactionDate = fd.get('transactionDate') as string;
-    const description = (fd.get('description') as string) || null;
+    const validatedFields = createTransactionActionSchema.safeParse({
+        accountId: formData.get('accountId') as string,
+        categoryId: formData.get('categoryId') as string,
+        type: formData.get('type') as TransactionType,
+        value: parseFloat(formData.get('value') as string),
+        transactionDate: formData.get('transactionDate') as string,
+        description: (formData.get('description') as string) || null
+    });
 
-    if (!isValidUUID(accountId) || !isValidUUID(categoryId)) return { error: 'Dados inválidos.' };
-    if (!TransactionTypeZod.includes(type)) return { error: 'Tipo inválido.' };
-    if (isNaN(value) || value <= 0) return { error: 'Valor inválido.' };
-    if (!transactionDate) return { error: 'Data obrigatória.' };
+    if (!validatedFields.success) return { errors: z.flattenError(validatedFields.error).fieldErrors };
+
+    const data = validatedFields.data;
 
     try {
         await transactionRepository.create({
-            userId: user.id, accountId, categoryId, type, value, description, transactionDate
+            userId: user.id,
+            accountId: data.accountId,
+            categoryId: data.categoryId,
+            type: data.type,
+            value: data.value,
+            description: data.description,
+            transactionDate: data.transactionDate
         });
         revalidatePath('/dashboard/transactions');
-        return {};
+        return { success: ' Transação criada com sucesso.' };
     } catch {
         return { error: 'Erro ao salvar transação.' };
     }

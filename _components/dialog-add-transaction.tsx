@@ -1,75 +1,97 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { ChangeEvent, startTransition, SubmitEvent, useActionState, useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, } from '@/_components/ui/dialog';
 import { Button } from '@/_components/ui/button';
 import { Input } from '@/_components/ui/input';
 import { Label } from '@/_components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/_components/ui/select';
 import { createTransactionAction } from '@/_actions/createtransaction';
-import { DialogAddTransactionProps, TransactionType, TransactionTypeZod } from '@/_types';
+import { accountTypeLabel, DialogAddTransactionProps, TransactionType, TransactionTypeZod } from '@/_types';
+import { InputError } from './input-error';
+import { X } from 'lucide-react';
+
+const initialData = {
+    type: 'EXPENSE' as TransactionType,
+    accountId: '',
+    categoryId: '',
+    subcategoryId: '',
+    subsubcategoryId: '',
+    value: '',
+    transactionDate: new Date().toISOString().slice(0, 10),
+    description: '',
+};
 
 export function DialogAddTransaction({ accounts, categories }: DialogAddTransactionProps) {
     const [open, setOpen] = useState(false);
-    const [isPending, startTransition] = useTransition();
-    const [error, setError] = useState<string | null>(null);
-
-    const [type, setType] = useState<TransactionType>('EXPENSE');
-    const [categoryId, setCategoryId] = useState('');
+    const formRef = useRef<HTMLFormElement>(null);
+    const [state, action, pending] = useActionState(createTransactionAction, undefined);
+    const [feedback, setFeedback] = useState<{ error?: string | null; success?: string | null }>({});
+    const [data, setData] = useState(initialData);
 
     // filtra raízes pelo tipo selecionado
-    const roots = categories.filter((c) => c.depth === 0 && c.type === type);
+    const roots = categories.filter((c) => c.depth === 0 && c.type === data.type);
 
     // filtra filhos da categoria selecionada (depth 1)
-    const selectedRoot = categories.find((c) => c.id === categoryId && c.depth === 0);
+    const selectedRoot = categories.find((c) => c.id === data.categoryId && c.depth === 0);
     const children = selectedRoot
         ? categories.filter((c) => c.parent_id === selectedRoot.id && c.depth === 1)
         : [];
 
-    const [subcategoryId, setSubcategoryId] = useState('');
-    const selectedChild = categories.find((c) => c.id === subcategoryId && c.depth === 1);
+    const selectedChild = categories.find((c) => c.id === data.subcategoryId && c.depth === 1);
     const grandchildren = selectedChild
         ? categories.filter((c) => c.parent_id === selectedChild.id && c.depth === 2)
         : [];
 
-    const [subsubcategoryId, setSubsubcategoryId] = useState('');
+    const finalCategoryId = data.subsubcategoryId || data.subcategoryId || data.categoryId;
 
-    // ID final para gravar: o mais profundo selecionado
-    const finalCategoryId = subsubcategoryId || subcategoryId || categoryId;
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const { id, value } = e.target;
+        setData((prev) => ({ ...prev, [id]: value }));
+    };
 
     function handleTypeChange(val: TransactionType) {
-        setType(val);
-        setCategoryId('');
-        setSubcategoryId('');
-        setSubsubcategoryId('');
+        setData((prev) => ({ ...prev, type: val, categoryId: '', subcategoryId: '', subsubcategoryId: '' }));
     }
 
     function handleCategoryChange(val: string) {
-        setCategoryId(val);
-        setSubcategoryId('');
-        setSubsubcategoryId('');
+        setData((prev) => ({ ...prev, categoryId: val, subcategoryId: '', subsubcategoryId: '' }));
     }
 
     function handleSubcategoryChange(val: string) {
-        setSubcategoryId(val);
-        setSubsubcategoryId('');
+        setData((prev) => ({ ...prev, subcategoryId: val, subsubcategoryId: '' }));
     }
 
-    async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
-        e.preventDefault();
-        setError(null);
-        const fd = new FormData(e.currentTarget);
-        fd.set('categoryId', finalCategoryId);
-        fd.set('type', type);
+    useEffect(() => {
+        if (state?.success) {
+            setData(initialData);
+            formRef.current?.reset();
+        }
+    }, [state]);
+    useEffect(() => {
+        if (!state) return;
+        setFeedback({ error: state.error, success: state.success });
+        const timer = setTimeout(() => setFeedback({}), 3000);
 
-        startTransition(async () => {
-            const result = await createTransactionAction(fd);
-            if (result?.error) { setError(result.error); return; }
-            setOpen(false);
-        });
+        return () => clearTimeout(timer);
+    }, [state]);
+
+    async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
+        e.preventDefault();
+        const formData = new FormData(e.currentTarget);
+        formData.set('accountId', data.accountId);
+        formData.set('categoryId', finalCategoryId);
+        formData.set('type', data.type);
+        formData.set('value', data.value);
+        formData.set('transactionDate', data.transactionDate);
+        formData.set('description', data.description);
+        startTransition(async () => action(formData));
     }
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog
+            open={open}
+            onOpenChange={setOpen}
+        >
             <DialogTrigger asChild>
                 <Button size="sm">+ Nova transação</Button>
             </DialogTrigger>
@@ -77,15 +99,20 @@ export function DialogAddTransaction({ accounts, categories }: DialogAddTransact
                 <DialogHeader>
                     <DialogTitle>Nova transação</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-2">
+                <form
+                    ref={formRef}
+                    onSubmit={handleSubmit}
+                    className="flex flex-col gap-4 pt-2"
+                >
                     {/* Tipo */}
                     <div className="grid grid-cols-2 gap-2">
                         {TransactionTypeZod.map((t) => (
                             <button
                                 key={t}
                                 type="button"
+                                disabled={pending}
                                 onClick={() => handleTypeChange(t)}
-                                className={`rounded-lg border py-2 text-sm font-medium transition-colors ${type === t
+                                className={`rounded-lg border py-2 text-sm font-medium transition-colors ${data.type === t
                                     ? t === 'EXPENSE'
                                         ? 'border-rose-500 bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
                                         : 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
@@ -100,69 +127,119 @@ export function DialogAddTransaction({ accounts, categories }: DialogAddTransact
                     {/* Conta */}
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="accountId">Conta</Label>
-                        <Select name="accountId" required>
-                            <SelectTrigger id="accountId">
-                                <SelectValue placeholder="Selecione a conta" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {accounts.map((a) => (
-                                    <SelectItem
-                                        key={a.id}
-                                        value={a.id}
-                                    >
-                                        {a.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <div className="flex items-center gap-2">
+                            <div className="flex-1">
+                                <Select
+                                    value={data.accountId}
+                                    onValueChange={(value) => setData((prev) => ({ ...prev, accountId: value }))}
+                                    required
+                                    disabled={pending}
+                                >
+                                    <SelectTrigger id="accountId" className="w-full">
+                                        <SelectValue placeholder="Selecione a conta" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {accounts.map((a) => (
+                                            <SelectItem
+                                                key={a.id}
+                                                value={a.id}
+                                            >
+                                                {a.name}
+                                                <span className="text-muted-foreground"> · {accountTypeLabel[a.type]}</span>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            {data.accountId && (
+                                <button
+                                    type="button"
+                                    onClick={() => setData((prev) => ({ ...prev, accountId: '' }))}
+                                    disabled={pending}
+                                    className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
+                                    aria-label="Limpar conta"
+                                >
+                                    <X className="size-4" />
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     {/* Categoria raiz */}
                     <div className="flex flex-col gap-1.5">
                         <Label>Categoria</Label>
-                        <Select
-                            value={categoryId}
-                            onValueChange={handleCategoryChange}
-                            required
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Selecione a categoria" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {roots.map((c) => (
-                                    <SelectItem
-                                        key={c.id}
-                                        value={c.id}
-                                    >
-                                        {c.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <div className="flex items-center gap-2">
+                            <div className="flex-1">
+                                <Select
+                                    value={data.categoryId}
+                                    onValueChange={handleCategoryChange}
+                                    required
+                                    disabled={pending}
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Selecione a categoria" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {roots.map((c) => (
+                                            <SelectItem
+                                                key={c.id}
+                                                value={c.id}
+                                            >
+                                                {c.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            {data.categoryId && (
+                                <button
+                                    type="button"
+                                    onClick={() => setData((prev) => ({ ...prev, categoryId: '', subcategoryId: '', subsubcategoryId: '' }))}
+                                    disabled={pending}
+                                    className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
+                                    aria-label="Limpar categoria"
+                                >
+                                    <X className="size-4" />
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     {/* Subcategoria (nível 1) */}
                     {children.length > 0 && (
                         <div className="flex flex-col gap-1.5">
                             <Label>Subcategoria</Label>
-                            <Select
-                                value={subcategoryId}
-                                onValueChange={handleSubcategoryChange}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Selecione (opcional)" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {children.map((c) => (
-                                        <SelectItem
-                                            key={c.id}
-                                            value={c.id}
-                                        >
-                                            {c.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <div className="flex items-center gap-2">
+                                <div className="flex-1">
+                                    <Select
+                                        value={data.subcategoryId}
+                                        onValueChange={handleSubcategoryChange}
+                                        disabled={pending}
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Selecione (opcional)" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {children.map((c) => (
+                                                <SelectItem key={c.id} value={c.id}>
+                                                    {c.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                {data.subcategoryId && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setData((prev) => ({ ...prev, subcategoryId: '', subsubcategoryId: '' }))}
+                                        disabled={pending}
+                                        className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
+                                        aria-label="Limpar subcategoria"
+                                    >
+                                        <X className="size-4" />
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     )}
 
@@ -170,24 +247,37 @@ export function DialogAddTransaction({ accounts, categories }: DialogAddTransact
                     {grandchildren.length > 0 && (
                         <div className="flex flex-col gap-1.5">
                             <Label>Detalhe</Label>
-                            <Select
-                                value={subsubcategoryId}
-                                onValueChange={setSubsubcategoryId}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Selecione (opcional)" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {grandchildren.map((c) => (
-                                        <SelectItem
-                                            key={c.id}
-                                            value={c.id}
-                                        >
-                                            {c.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <div className="flex items-center gap-2">
+                                <div className="flex-1">
+                                    <Select
+                                        value={data.subsubcategoryId}
+                                        onValueChange={(value) => setData((prev) => ({ ...prev, subsubcategoryId: value }))}
+                                        disabled={pending}
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Selecione (opcional)" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {grandchildren.map((c) => (
+                                                <SelectItem key={c.id} value={c.id}>
+                                                    {c.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                {data.subsubcategoryId && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setData((prev) => ({ ...prev, subsubcategoryId: '' }))}
+                                        disabled={pending}
+                                        className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
+                                        aria-label="Limpar detalhe"
+                                    >
+                                        <X className="size-4" />
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     )}
 
@@ -201,8 +291,12 @@ export function DialogAddTransaction({ accounts, categories }: DialogAddTransact
                             min="0.01"
                             step="0.01"
                             placeholder="0,00"
+                            value={data.value}
+                            onChange={handleChange}
+                            disabled={pending}
                             required
                         />
+                        {state?.errors?.value?.[0] && <InputError message={state.errors.value[0]} />}
                     </div>
 
                     {/* Data */}
@@ -212,9 +306,12 @@ export function DialogAddTransaction({ accounts, categories }: DialogAddTransact
                             id="transactionDate"
                             name="transactionDate"
                             type="date"
-                            defaultValue={new Date().toISOString().slice(0, 10)}
+                            value={data.transactionDate}
+                            onChange={handleChange}
+                            disabled={pending}
                             required
                         />
+                        {state?.errors?.transactionDate?.[0] && <InputError message={state.errors.transactionDate[0]} />}
                     </div>
 
                     {/* Descrição */}
@@ -224,17 +321,23 @@ export function DialogAddTransaction({ accounts, categories }: DialogAddTransact
                             id="description"
                             name="description"
                             placeholder="Ex: almoço com cliente"
+                            value={data.description}
+                            onChange={handleChange}
+                            disabled={pending}
                         />
+                        {state?.errors?.description?.[0] && <InputError message={state.errors.description[0]} />}
                     </div>
 
-                    {error && <p className="text-xs text-red-600">{error}</p>}
+                    {/* Mensagens de Feedback */}
+                    {feedback.error && <p className="text-sm text-red-600 dark:text-red-400">{feedback.error}</p>}
+                    {feedback.success && <p className="text-sm text-green-600 dark:text-green-400">{feedback.success}</p>}
 
                     <Button
                         type="submit"
-                        disabled={isPending}
+                        disabled={pending}
                         className="mt-1"
                     >
-                        {isPending ? 'Salvando...' : 'Salvar transação'}
+                        {pending ? 'Salvando...' : 'Salvar transação'}
                     </Button>
                 </form>
             </DialogContent>

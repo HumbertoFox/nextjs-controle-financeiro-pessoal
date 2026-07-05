@@ -2,12 +2,12 @@
 
 import { accountRepository } from '@/_lib/accountrepository';
 import { getUser } from '@/_lib/dal';
-import { createAccountActionSchema, FormcreateAccountAction } from '@/_lib/definitions';
+import { createAccountActionSchema, FormStateCreateAccountAction } from '@/_lib/definitions';
 import { AccountType } from '@/_types';
 import { revalidatePath } from 'next/cache';
 import z from 'zod';
 
-export async function createAccountAction(_: FormcreateAccountAction, formData: FormData): Promise<FormcreateAccountAction> {
+export async function createAccountAction(_: FormStateCreateAccountAction, formData: FormData): Promise<FormStateCreateAccountAction> {
     const user = await getUser();
     if (!user) return { error: 'Não autorizado.' };
 

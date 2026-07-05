@@ -2,12 +2,12 @@
 
 import { categoryRepository } from '@/_lib/categoryrepository';
 import { getUser } from '@/_lib/dal';
-import { createCategoryActionSchema, FormcreateCategoryAction } from '@/_lib/definitions';
+import { createCategoryActionSchema, FormStateCreateCategoryAction } from '@/_lib/definitions';
 import { TransactionType } from '@/_types';
 import { revalidatePath } from 'next/cache';
 import z from 'zod';
 
-export async function createCategoryAction(_: FormcreateCategoryAction, formData: FormData): Promise<FormcreateCategoryAction> {
+export async function createCategoryAction(_: FormStateCreateCategoryAction, formData: FormData): Promise<FormStateCreateCategoryAction> {
     const user = await getUser();
     if (!user) return { error: 'Não Autenticado.' };
 

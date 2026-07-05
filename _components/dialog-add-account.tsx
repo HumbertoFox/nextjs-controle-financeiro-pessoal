@@ -1,6 +1,7 @@
 'use client';
 
 import { ChangeEvent, startTransition, SubmitEvent, useActionState, useState, useEffect, useRef } from 'react';
+import { X } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, } from '@/_components/ui/dialog';
 import { Button } from '@/_components/ui/button';
 import { Input } from '@/_components/ui/input';
@@ -10,16 +11,22 @@ import { createAccountAction } from '@/_actions/createaccount';
 import { AccountType, accountTypeLabel } from '@/_types';
 import { InputError } from './input-error';
 
+const initialData = {
+    name: '',
+    type: '' as AccountType | '',
+    initialBalance: 0,
+};
+
 export function DialogAddAccount() {
     const [open, setOpen] = useState(false);
     const formRef = useRef<HTMLFormElement>(null);
     const [state, action, pending] = useActionState(createAccountAction, undefined);
-    const [data, setData] = useState({ name: '', type: '', initialBalance: 0 });
+    const [data, setData] = useState(initialData);
     const [feedback, setFeedback] = useState<{ error?: string | null; success?: string | null }>({});
 
     useEffect(() => {
         if (state?.success) {
-            setData({ name: '', type: '', initialBalance: 0 });
+            setData(initialData);
             formRef.current?.reset();
         }
     }, [state]);
@@ -51,8 +58,11 @@ export function DialogAddAccount() {
                 <DialogHeader>
                     <DialogTitle>Nova conta</DialogTitle>
                 </DialogHeader>
-                {/* 4. Vinculado o formRef aqui no formulário */}
-                <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-4 pt-2">
+                <form
+                    ref={formRef}
+                    onSubmit={handleSubmit}
+                    className="flex flex-col gap-4 pt-2"
+                >
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="name">Nome</Label>
                         <Input
@@ -70,27 +80,42 @@ export function DialogAddAccount() {
 
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="type">Tipo</Label>
-                        <Select
-                            name="type"
-                            required
-                            value={data.type}
-                            onValueChange={(value: AccountType) => setData((prev) => ({ ...prev, type: value }))}
-                            disabled={pending}
-                        >
-                            <SelectTrigger id="type">
-                                <SelectValue placeholder="Selecione o tipo" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {Object.entries(accountTypeLabel).map(([value, label]) => (
-                                    <SelectItem
-                                        key={value}
-                                        value={value}
-                                    >
-                                        {label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <div className="flex items-center gap-2">
+                            <div className="flex-1">
+                                <Select
+                                    name="type"
+                                    required
+                                    value={data.type}
+                                    onValueChange={(value: AccountType) => setData((prev) => ({ ...prev, type: value }))}
+                                    disabled={pending}
+                                >
+                                    <SelectTrigger id="type" className="w-full">
+                                        <SelectValue placeholder="Selecione o tipo" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Object.entries(accountTypeLabel).map(([value, label]) => (
+                                            <SelectItem
+                                                key={value}
+                                                value={value}
+                                            >
+                                                {label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            {data.type && (
+                                <button
+                                    type="button"
+                                    onClick={() => setData((prev) => ({ ...prev, type: '' }))}
+                                    disabled={pending}
+                                    className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
+                                    aria-label="Limpar tipo"
+                                >
+                                    <X className="size-4" />
+                                </button>
+                            )}
+                        </div>
                         {state?.errors?.type?.[0] && <InputError message={state.errors.type[0]} />}
                     </div>
 
@@ -102,7 +127,7 @@ export function DialogAddAccount() {
                             type="number"
                             min="0"
                             step="0.01"
-                            value={data.initialBalance || ''} // Ajuste simples para não travar o input em 0 visualmente após limpar
+                            value={data.initialBalance || ''}
                             onChange={handleChange}
                             disabled={pending}
                             required
