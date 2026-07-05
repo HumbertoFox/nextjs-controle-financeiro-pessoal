@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { startTransition, useActionState, useState, useEffect, useRef, SubmitEvent } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, } from '@/_components/ui/dialog';
 import { Button } from '@/_components/ui/button';
 import { Input } from '@/_components/ui/input';
@@ -8,28 +8,38 @@ import { Label } from '@/_components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/_components/ui/select';
 import { createCategoryAction } from '@/_actions/createcategory';
 import { DialogAddCategoryProps, TransactionType, TransactionTypeZod } from '@/_types';
+import { InputError } from './input-error';
 
 export function DialogAddCategory({ categories }: DialogAddCategoryProps) {
     const [open, setOpen] = useState(false);
-    const [isPending, startTransition] = useTransition();
-    const [error, setError] = useState<string | null>(null);
-
+    const formRef = useRef<HTMLFormElement>(null);
+    const [state, action, pending] = useActionState(createCategoryAction, undefined);
+    const [feedback, setFeedback] = useState<{ error?: string | null; success?: string | null }>({});
     const [type, setType] = useState<TransactionType>('EXPENSE');
     const [parentId, setParentId] = useState('');
     const [subParentId, setSubParentId] = useState('');
 
-    // nível 0 filtrado por tipo
-    const roots = categories.filter((c) => c.depth === 0 && c.type === type);
-    // nível 1 filhos do root selecionado
-    const children = parentId
-        ? categories.filter((c) => c.parent_id === parentId && c.depth === 1)
-        : [];
+    useEffect(() => {
+        if (state?.success) {
+            formRef.current?.reset();
+            setType('EXPENSE');
+            setParentId('');
+            setSubParentId('');
+        }
+    }, [state]);
+    useEffect(() => {
+        if (!state) return;
+        setFeedback({ error: state.error, success: state.success });
+        const timer = setTimeout(() => setFeedback({}), 3000);
 
-    // parent final = sub-subcategoria se selecionada, senão subcategoria, senão raiz
+        return () => clearTimeout(timer);
+    }, [state]);
+
+    const roots = categories.filter((c) => !c.parent_id && c.type === type);
+    const children = parentId
+        ? categories.filter((c) => c.parent_id === parentId)
+        : [];
     const finalParentId = subParentId || parentId || null;
-    // depth da nova categoria = profundidade do pai + 1 (máximo 2)
-    const parentDepth = subParentId ? 2 : parentId ? 1 : 0;
-    const isLeafLevel = parentDepth >= 2;
 
     function handleTypeChange(val: TransactionType) {
         setType(val);
@@ -37,21 +47,19 @@ export function DialogAddCategory({ categories }: DialogAddCategoryProps) {
         setSubParentId('');
     }
 
-    async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
+    async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
-        setError(null);
-        const fd = new FormData(e.currentTarget);
-        fd.set('type', type);
-        if (finalParentId) fd.set('parentId', finalParentId);
+        const formData = new FormData(e.currentTarget);
+        formData.set('type', type);
 
-        startTransition(async () => {
-            const result = await createCategoryAction(fd);
-            if (result?.error) { setError(result.error); return; }
-            setOpen(false);
-        });
+        if (finalParentId) formData.set('parentId', finalParentId);
+        startTransition(async () => action(formData));
     }
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog
+            open={open}
+            onOpenChange={setOpen}
+        >
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm">+ Categoria</Button>
             </DialogTrigger>
@@ -59,13 +67,15 @@ export function DialogAddCategory({ categories }: DialogAddCategoryProps) {
                 <DialogHeader>
                     <DialogTitle>Nova categoria</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-2">
-                    {/* Tipo */}
+                <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-4 pt-2">
+
+                    {/* Tipo (Gasto / Receita) */}
                     <div className="grid grid-cols-2 gap-2">
                         {TransactionTypeZod.map((t) => (
                             <button
                                 key={t}
                                 type="button"
+                                disabled={pending}
                                 onClick={() => handleTypeChange(t)}
                                 className={`rounded-lg border py-2 text-sm font-medium transition-colors ${type === t
                                     ? t === 'EXPENSE'
@@ -79,24 +89,22 @@ export function DialogAddCategory({ categories }: DialogAddCategoryProps) {
                         ))}
                     </div>
 
-                    {/* Categoria pai (opcional) */}
+                    {/* Categoria Pai (Nível 0) */}
                     {roots.length > 0 && (
                         <div className="flex flex-col gap-1.5">
                             <Label>Categoria pai <span className="text-muted-foreground">(opcional)</span></Label>
                             <Select
                                 value={parentId}
-                                onValueChange={(v) => { setParentId(v); setSubParentId(''); }}
+                                onValueChange={(value) => { setParentId(value); setSubParentId(''); }}
+                                disabled={pending}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Criar como categoria raiz" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {roots.map((c) => (
-                                        <SelectItem
-                                            key={c.id}
-                                            value={c.id}
-                                        >
-                                            {c.name}
+                                    {roots.map((category) => (
+                                        <SelectItem key={category.id} value={category.id}>
+                                            {category.name}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -104,23 +112,21 @@ export function DialogAddCategory({ categories }: DialogAddCategoryProps) {
                         </div>
                     )}
 
-                    {/* Subcategoria pai (nível 1 → criar no nível 2) */}
-                    {children.length > 0 && !isLeafLevel && (
+                    {/* Subcategoria Pai (Nível 1) */}
+                    {children.length > 0 && (
                         <div className="flex flex-col gap-1.5">
                             <Label>Subcategoria pai <span className="text-muted-foreground">(opcional)</span></Label>
                             <Select
                                 value={subParentId}
                                 onValueChange={setSubParentId}
+                                disabled={pending}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Criar no nível anterior" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {children.map((c) => (
-                                        <SelectItem
-                                            key={c.id}
-                                            value={c.id}
-                                        >
+                                        <SelectItem key={c.id} value={c.id}>
                                             {c.name}
                                         </SelectItem>
                                     ))}
@@ -137,16 +143,20 @@ export function DialogAddCategory({ categories }: DialogAddCategoryProps) {
                             name="name"
                             placeholder="Ex: Transporte"
                             required
+                            disabled={pending}
                         />
+                        {state?.errors?.name?.[0] && <InputError message={state.errors.name[0]} />}
                     </div>
 
-                    {error && <p className="text-xs text-red-600">{error}</p>}
+                    {/* Mensagens de Feedback */}
+                    {feedback.error && <p className="text-sm text-red-600 dark:text-red-400">{feedback.error}</p>}
+                    {feedback.success && <p className="text-sm text-green-600 dark:text-green-400">{feedback.success}</p>}
 
                     <Button
                         type="submit"
-                        disabled={isPending}
+                        disabled={pending}
                     >
-                        {isPending ? 'Salvando...' : 'Criar categoria'}
+                        {pending ? 'Salvando...' : 'Criar categoria'}
                     </Button>
                 </form>
             </DialogContent>

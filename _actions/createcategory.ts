@@ -2,31 +2,35 @@
 
 import { categoryRepository } from '@/_lib/categoryrepository';
 import { getUser } from '@/_lib/dal';
-import { isValidUUID } from '@/_lib/useful';
-import { TransactionType, TransactionTypeZod } from '@/_types';
+import { createCategoryActionSchema, FormcreateCategoryAction } from '@/_lib/definitions';
+import { TransactionType } from '@/_types';
 import { revalidatePath } from 'next/cache';
+import z from 'zod';
 
-export async function createCategoryAction(fd: FormData) {
+export async function createCategoryAction(_: FormcreateCategoryAction, formData: FormData): Promise<FormcreateCategoryAction> {
     const user = await getUser();
-    if (!user) return { error: 'Não autorizado.' };
+    if (!user) return { error: 'Não Autenticado.' };
 
-    const name = (fd.get('name') as string)?.trim();
-    const type = fd.get('type') as TransactionType;
-    const parentId = (fd.get('parentId') as string) || null;
+    const validatedFields = createCategoryActionSchema.safeParse({
+        name: (formData.get('name') as string)?.trim(),
+        type: formData.get('type') as TransactionType,
+        parentId: (formData.get('parentId') as string) || null
+    });
 
-    if (!name) return { error: 'Nome obrigatório.' };
-    if (!TransactionTypeZod.includes(type)) return { error: 'Tipo inválido.' };
-    if (parentId && !isValidUUID(parentId)) return { error: 'Categoria pai inválida.' };
+    if (!validatedFields.success) return { errors: z.flattenError(validatedFields.error).fieldErrors };
+
+    const data = validatedFields.data;
 
     try {
-        const existing = await categoryRepository.findByUserIdAndNameAndParent(user.id, name, parentId);
+        const existing = await categoryRepository.findByUserIdAndNameAndParent(user.id, data.name, data.parentId);
         if (existing) return { error: 'Já existe uma categoria com esse nome neste nível.' };
 
         await categoryRepository.create({
-            userId: user.id, name, type, parentId
+            userId: user.id, name: data.name, type: data.type, parentId: data.parentId
         });
+        
         revalidatePath('/dashboard/transactions');
-        return {};
+        return { success: 'Categoria criada com sucesso!' };
     } catch {
         return { error: 'Erro ao criar categoria.' };
     }

@@ -1,6 +1,6 @@
 'use client';
 
-import { ChangeEvent, startTransition, SubmitEvent, useActionState, useState } from 'react';
+import { ChangeEvent, startTransition, SubmitEvent, useActionState, useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, } from '@/_components/ui/dialog';
 import { Button } from '@/_components/ui/button';
 import { Input } from '@/_components/ui/input';
@@ -12,9 +12,24 @@ import { InputError } from './input-error';
 
 export function DialogAddAccount() {
     const [open, setOpen] = useState(false);
+    const formRef = useRef<HTMLFormElement>(null);
     const [state, action, pending] = useActionState(createAccountAction, undefined);
     const [data, setData] = useState({ name: '', type: '', initialBalance: 0 });
+    const [feedback, setFeedback] = useState<{ error?: string | null; success?: string | null }>({});
 
+    useEffect(() => {
+        if (state?.success) {
+            setData({ name: '', type: '', initialBalance: 0 });
+            formRef.current?.reset();
+        }
+    }, [state]);
+    useEffect(() => {
+        if (!state) return;
+        setFeedback({ error: state.error, success: state.success });
+        const timer = setTimeout(() => setFeedback({}), 3000);
+
+        return () => clearTimeout(timer);
+    }, [state]);
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
         setData({ ...data, [id]: value });
@@ -36,7 +51,8 @@ export function DialogAddAccount() {
                 <DialogHeader>
                     <DialogTitle>Nova conta</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-2">
+                {/* 4. Vinculado o formRef aqui no formulário */}
+                <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-4 pt-2">
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="name">Nome</Label>
                         <Input
@@ -55,6 +71,7 @@ export function DialogAddAccount() {
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="type">Tipo</Label>
                         <Select
+                            name="type"
                             required
                             value={data.type}
                             onValueChange={(value: AccountType) => setData((prev) => ({ ...prev, type: value }))}
@@ -85,7 +102,7 @@ export function DialogAddAccount() {
                             type="number"
                             min="0"
                             step="0.01"
-                            value={data.initialBalance}
+                            value={data.initialBalance || ''} // Ajuste simples para não travar o input em 0 visualmente após limpar
                             onChange={handleChange}
                             disabled={pending}
                             required
@@ -93,8 +110,8 @@ export function DialogAddAccount() {
                         {state?.errors?.initialBalance?.[0] && <InputError message={state.errors.initialBalance[0]} />}
                     </div>
 
-                    {state?.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
-                    {state?.success && <p className="text-sm text-green-600 dark:text-green-400">{state.success}</p>}
+                    {feedback.error && <p className="text-sm text-red-600 dark:text-red-400">{feedback.error}</p>}
+                    {feedback.success && <p className="text-sm text-green-600 dark:text-green-400">{feedback.success}</p>}
 
                     <Button
                         type="submit"

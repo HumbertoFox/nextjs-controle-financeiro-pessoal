@@ -2,7 +2,7 @@
 
 import { accountRepository } from '@/_lib/accountrepository';
 import { getUser } from '@/_lib/dal';
-import { createAccountActionSharm, FormcreateAccountAction } from '@/_lib/definitions';
+import { createAccountActionSchema, FormcreateAccountAction } from '@/_lib/definitions';
 import { AccountType } from '@/_types';
 import { revalidatePath } from 'next/cache';
 import z from 'zod';
@@ -11,7 +11,7 @@ export async function createAccountAction(_: FormcreateAccountAction, formData: 
     const user = await getUser();
     if (!user) return { error: 'Não autorizado.' };
 
-    const validatedFields = createAccountActionSharm.safeParse({
+    const validatedFields = createAccountActionSchema.safeParse({
         name: (formData.get('name') as string)?.trim(),
         type: formData.get('type') as AccountType,
         initialBalance: parseFloat(formData.get('initialBalance') as string)
