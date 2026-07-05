@@ -106,6 +106,7 @@ export type TransactionRow = {
     readonly account_name: string;
     readonly category_name: string;
     readonly subcategory_name: string | null;
+    readonly subsubcategory_name: string | null;
 }
 
 export type TransactionsPaginated = {

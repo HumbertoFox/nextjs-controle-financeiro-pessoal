@@ -11,11 +11,10 @@ export function TransactionsTable({ rows, total, pageSize }: TransactionsTablePr
             </div>
         );
     }
-
     return (
         <div className="bg-background rounded-xl border border-border overflow-hidden">
             <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-sm cursor-default">
                     <thead>
                         <tr className="border-b border-border">
                             <th className="text-left px-4 py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">Data</th>
@@ -36,10 +35,21 @@ export function TransactionsTable({ rows, total, pageSize }: TransactionsTablePr
                                 <td className="px-4 py-3 whitespace-nowrap">{row.account_name}</td>
                                 <td className="px-4 py-3 whitespace-nowrap">{row.category_name}</td>
                                 <td className="px-4 py-3 text-muted-foreground text-xs">
-                                    {row.subcategory_name ?? '—'}
+                                    {row.subcategory_name
+                                        ? (row.subsubcategory_name
+                                            ? `${row.subcategory_name} / ${row.subsubcategory_name}`
+                                            : row.subcategory_name)
+                                        : '—'}
                                 </td>
-                                <td className="px-4 py-3 text-muted-foreground text-xs max-w-45 truncate">
-                                    {row.description ?? '—'}
+                                <td
+                                    className="px-4 py-3 text-muted-foreground text-xs max-w-45 truncate"
+                                    title={row.description ?? undefined}
+                                >
+                                    {row.description
+                                        ? (row.description.length > 10
+                                            ? `${row.description.slice(0, 10)}...`
+                                            : row.description)
+                                        : '—'}
                                 </td>
                                 <td className={`px-4 py-3 text-right font-medium tabular-nums whitespace-nowrap ${row.type === 'REVENUE' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                                     }`}>

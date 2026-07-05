@@ -3,7 +3,7 @@ import { TransactionRow, TransactionsPaginated } from '@/_types';
 
 export const transactionRepository = {
     // -------------------------------------------------------------------------
-    // Busca paginada de transações com categoria e subcategoria
+    // Busca paginada de transações com categoria, subcategoria e sub-subcategoria
     // -------------------------------------------------------------------------
     async findByUserIdPaginated(
         userId: string,
@@ -22,13 +22,22 @@ export const transactionRepository = {
                 t.description,
                 t.transaction_date::text,
                 t.status,
-                a.name  AS account_name,
-                COALESCE(parent.name, c.name) AS category_name,
-                CASE WHEN parent.id IS NOT NULL THEN c.name ELSE NULL END AS subcategory_name
+                a.name AS account_name,
+                COALESCE(gp.name, p.name, c.name) AS category_name,
+                CASE
+                    WHEN gp.id IS NOT NULL THEN p.name
+                    WHEN p.id  IS NOT NULL THEN c.name
+                    ELSE NULL
+                END AS subcategory_name,
+                CASE
+                    WHEN gp.id IS NOT NULL THEN c.name
+                    ELSE NULL
+                END AS subsubcategory_name
             FROM transactions t
-            JOIN accounts    a      ON a.id = t.account_id
-            JOIN categories  c      ON c.id = t.category_id
-            LEFT JOIN categories parent ON parent.id = c.parent_id
+            JOIN accounts    a  ON a.id = t.account_id
+            JOIN categories  c  ON c.id = t.category_id
+            LEFT JOIN categories p  ON p.id  = c.parent_id
+            LEFT JOIN categories gp ON gp.id = p.parent_id
             WHERE t.user_id    = $1
               AND t.deleted_at IS NULL
             ORDER BY t.transaction_date DESC, t.created_at DESC
