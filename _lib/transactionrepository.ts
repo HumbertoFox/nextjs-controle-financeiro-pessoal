@@ -1,9 +1,9 @@
 import pool, { QueryExecutor } from '@/_lib/db';
-import { TransactionRow, TransactionsPaginated } from '@/_types';
+import { TransactionRow, TransactionsPaginated, TransactionStatus, TransactionType } from '@/_types';
 
 export const transactionRepository = {
     // -------------------------------------------------------------------------
-    // Busca paginada de transações com categoria, subcategoria e sub-subcategoria
+    // Busca paginada de transações com categoria, subcategoria, sub-subcategoria e parcelas
     // -------------------------------------------------------------------------
     async findByUserIdPaginated(
         userId: string,
@@ -22,6 +22,8 @@ export const transactionRepository = {
                 t.description,
                 t.transaction_date::text,
                 t.status,
+                t.installment_number,
+                t.installments_total,
                 a.name AS account_name,
                 COALESCE(gp.name, p.name, c.name) AS category_name,
                 CASE
@@ -131,49 +133,105 @@ export const transactionRepository = {
     },
 
     // -------------------------------------------------------------------------
-    // Cria transação e atualiza saldo da conta atomicamente
+    // Cria transação (ou parcelas) e atualiza saldo da conta atomicamente
     // -------------------------------------------------------------------------
     async create(data: {
         userId: string;
         accountId: string;
         categoryId: string;
-        type: 'REVENUE' | 'EXPENSE';
+        type: TransactionType;
         value: number;
         description?: string | null;
         transactionDate: string;
-        status?: 'PENDING' | 'CONFIRMED';
+        status?: TransactionStatus;
+        installmentsTotal?: number | null;
     }, client?: QueryExecutor): Promise<{ id: string }> {
         const executor = client ?? pool;
 
-        const result = await executor.query<{ id: string }>(`
-            INSERT INTO transactions
-                (user_id, account_id, category_id, type, value, description, transaction_date, status)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            RETURNING id
-        `,
-            [
-                data.userId,
-                data.accountId,
-                data.categoryId,
-                data.type,
-                data.value,
-                data.description ?? null,
-                data.transactionDate,
-                data.status ?? 'CONFIRMED',
-            ]
-        );
+        // Total de repetições: se não informado ou <= 1, vira 1 (transação avulsa)
+        const totalInstallments = data.installmentsTotal && data.installmentsTotal > 1 ? data.installmentsTotal : 1;
+        const isInstallment = totalInstallments > 1;
+        const installmentGroupId = isInstallment ? crypto.randomUUID() : null;
 
-        // atualiza saldo da conta
-        const delta = data.type === 'REVENUE' ? data.value : -data.value;
-        await executor.query(`
+        let firstTransactionId = '';
+
+        // Usando transação interna se nenhum client externo (pool já em transação) foi passado
+        const shouldManageTransaction = !client;
+        if (shouldManageTransaction) {
+            await pool.query('BEGIN');
+        }
+
+        try {
+            const baseDate = new Date(data.transactionDate + 'T00:00:00');
+
+            for (let i = 0; i < totalInstallments; i++) {
+                const installmentNumber = isInstallment ? i + 1 : null;
+
+                // Calcula as datas subsequentes (D+0, D+1 mês, D+2 meses...)
+                const currentDate = new Date(baseDate);
+                currentDate.setMonth(baseDate.getMonth() + i);
+                const dateString = currentDate.toISOString().slice(0, 10);
+
+                const result = await executor.query<{ id: string }>(`
+                INSERT INTO transactions
+                    (user_id, account_id, category_id, type, value, description, transaction_date, status, installment_group_id, installment_number, installments_total)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                RETURNING id
+            `,
+                    [
+                        data.userId,
+                        data.accountId,
+                        data.categoryId,
+                        data.type,
+                        data.value,
+                        data.description ?? null,
+                        data.transactionDate,
+                        data.status ?? 'CONFIRMED',
+                        installmentGroupId,
+                        installmentNumber,
+                        isInstallment ? totalInstallments : null
+                    ]
+                );
+
+                // atualiza saldo da conta
+                const delta = data.type === 'REVENUE' ? data.value : -data.value;
+                await executor.query(`
+                UPDATE accounts
+                SET current_balance = current_balance + $1
+                WHERE id = $2
+            `,
+                    [delta, data.accountId]
+                );
+
+                if (i === 0) {
+                    firstTransactionId = result.rows[0].id;
+                }
+            }
+
+            // Atualiza saldo da conta multiplicando o valor da parcela pela quantidade criadas
+            // Nota: Se suas parcelas representarem o valor TOTAL dividido, altere aqui para (data.value * totalInstallments) dependendo da sua regra de negócio. O código abaixo assume que data.value é o valor de cada parcela isolada.
+            const totalValueInserted = data.value * totalInstallments;
+            const delta = data.type === 'REVENUE' ? totalValueInserted : -totalValueInserted;
+
+            await executor.query(`
             UPDATE accounts
             SET current_balance = current_balance + $1
             WHERE id = $2
         `,
-            [delta, data.accountId]
-        );
+                [delta, data.accountId]
+            );
 
-        return result.rows[0];
+            if (shouldManageTransaction) {
+                await pool.query('COMMIT');
+            }
+
+            return { id: firstTransactionId };
+        } catch (error) {
+            if (shouldManageTransaction) {
+                await pool.query('ROLLBACK');
+            }
+            throw error;
+        }
     },
 
     // -------------------------------------------------------------------------

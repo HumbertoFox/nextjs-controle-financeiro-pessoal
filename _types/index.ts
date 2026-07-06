@@ -96,6 +96,27 @@ export type CategoryFlat = {
     readonly depth: number;
 }
 
+export type Transaction = {
+    readonly id: string;
+    readonly user_id: string;
+    readonly account_id: string;
+    readonly category_id: string;
+    readonly type: TransactionType;
+    readonly value: string;
+    readonly description: string | null;
+    readonly transaction_date: string;
+    readonly status: TransactionStatus;
+    readonly installment_group_id: string | null;
+    readonly installment_number: number | null;
+    readonly installments_total: number | null;
+    readonly created_at: string;
+    readonly updated_at: string;
+    readonly deleted_at: string | null;
+    readonly is_deleted: boolean;
+    readonly account_name: string;
+    readonly category_name: string;
+}
+
 export type TransactionRow = {
     readonly id: string;
     readonly type: TransactionType;
@@ -103,6 +124,9 @@ export type TransactionRow = {
     readonly description: string | null;
     readonly transaction_date: string;
     readonly status: TransactionStatus;
+    readonly installment_group_id: string | null;
+    readonly installment_number: number | null;
+    readonly installments_total: number | null;
     readonly account_name: string;
     readonly category_name: string;
     readonly subcategory_name: string | null;

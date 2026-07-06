@@ -11,13 +11,16 @@ export async function createTransactionAction(_: FormStateCreateTransactionActio
     const user = await getUser();
     if (!user) return { error: 'Não autorizado.' };
 
+    const rawInstallments = formData.get('installmentsTotal');
+
     const validatedFields = createTransactionActionSchema.safeParse({
         accountId: formData.get('accountId') as string,
         categoryId: formData.get('categoryId') as string,
         type: formData.get('type') as TransactionType,
         value: parseFloat(formData.get('value') as string),
         transactionDate: formData.get('transactionDate') as string,
-        description: (formData.get('description') as string) || null
+        description: (formData.get('description') as string) || null,
+        installmentsTotal: rawInstallments ? parseInt(rawInstallments as string, 10) : null
     });
 
     if (!validatedFields.success) return { errors: z.flattenError(validatedFields.error).fieldErrors };
@@ -32,7 +35,8 @@ export async function createTransactionAction(_: FormStateCreateTransactionActio
             type: data.type,
             value: data.value,
             description: data.description,
-            transactionDate: data.transactionDate
+            transactionDate: data.transactionDate,
+            installmentsTotal: data.installmentsTotal
         });
         revalidatePath('/dashboard/transactions');
         return { success: ' Transação criada com sucesso.' };

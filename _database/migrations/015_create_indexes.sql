@@ -104,6 +104,11 @@ CREATE INDEX IF NOT EXISTS idx_transactions_status
 
 COMMENT ON INDEX idx_transactions_status IS 'Otimiza queries que filtram transações por status';
 
+CREATE INDEX IF NOT EXISTS idx_transactions_installment_group_id
+    ON transactions(installment_group_id);
+
+COMMENT ON INDEX idx_transactions_installment_group_id IS 'Otimiza queries que buscam todas as parcelas de um mesmo lançamento';
+
 CREATE INDEX IF NOT EXISTS idx_transactions_deleted_at
     ON transactions(deleted_at);
 

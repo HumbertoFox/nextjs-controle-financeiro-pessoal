@@ -1,7 +1,7 @@
 'use client';
 
-import { ChangeEvent, startTransition, SubmitEvent, useActionState, useEffect, useRef, useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, } from '@/_components/ui/dialog';
+import { ChangeEvent, startTransition, SubmitEvent, useActionState, useEffect, useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/_components/ui/dialog';
 import { Button } from '@/_components/ui/button';
 import { Input } from '@/_components/ui/input';
 import { Label } from '@/_components/ui/label';
@@ -20,71 +20,84 @@ const initialData = {
     value: '',
     transactionDate: new Date().toISOString().slice(0, 10),
     description: '',
+    installmentsTotal: ''
 };
 
 export function DialogAddTransaction({ accounts, categories }: DialogAddTransactionProps) {
     const [open, setOpen] = useState(false);
-    const formRef = useRef<HTMLFormElement>(null);
     const [state, action, pending] = useActionState(createTransactionAction, undefined);
     const [feedback, setFeedback] = useState<{ error?: string | null; success?: string | null }>({});
     const [data, setData] = useState(initialData);
+    const [isInstallment, setIsInstallment] = useState(false);
 
-    // filtra raízes pelo tipo selecionado
     const roots = categories.filter((c) => c.depth === 0 && c.type === data.type);
-
-    // filtra filhos da categoria selecionada (depth 1)
     const selectedRoot = categories.find((c) => c.id === data.categoryId && c.depth === 0);
     const children = selectedRoot
         ? categories.filter((c) => c.parent_id === selectedRoot.id && c.depth === 1)
         : [];
-
     const selectedChild = categories.find((c) => c.id === data.subcategoryId && c.depth === 1);
     const grandchildren = selectedChild
         ? categories.filter((c) => c.parent_id === selectedChild.id && c.depth === 2)
         : [];
-
     const finalCategoryId = data.subsubcategoryId || data.subcategoryId || data.categoryId;
 
+    // Função utilitária para limpar a mensagem de sucesso assim que o usuário interagir
+    const clearSuccessFeedback = () => {
+        setFeedback((prev) => (prev.success ? { ...prev, success: null } : prev));
+    };
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
+        clearSuccessFeedback();
         setData((prev) => ({ ...prev, [id]: value }));
     };
-
     function handleTypeChange(val: TransactionType) {
+        clearSuccessFeedback();
         setData((prev) => ({ ...prev, type: val, categoryId: '', subcategoryId: '', subsubcategoryId: '' }));
     }
-
     function handleCategoryChange(val: string) {
+        clearSuccessFeedback();
         setData((prev) => ({ ...prev, categoryId: val, subcategoryId: '', subsubcategoryId: '' }));
     }
-
     function handleSubcategoryChange(val: string) {
+        clearSuccessFeedback();
         setData((prev) => ({ ...prev, subcategoryId: val, subsubcategoryId: '' }));
     }
 
+    // 1. Monitora o sucesso para resetar o formulário
     useEffect(() => {
         if (state?.success) {
             setData(initialData);
-            formRef.current?.reset();
+            setIsInstallment(false);
         }
     }, [state]);
+    // 2. Controla a exibição e o sumiço automático das mensagens
     useEffect(() => {
         if (!state) return;
         setFeedback({ error: state.error, success: state.success });
-        const timer = setTimeout(() => setFeedback({}), 3000);
+        //Se o componente desmontar ou um novo estado chegar, o timer anterior é limpo
+        const timer = setTimeout(() => {
+            setFeedback({});
+        }, 4000);
 
         return () => clearTimeout(timer);
     }, [state]);
-
+    // 3. NOVO: Limpa os feedbacks antigos se o usuário fechar e reabrir o modal manualmente
+    useEffect(() => {
+        if (!open) {
+            setFeedback({});
+        }
+    }, [open]);
     async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
-        const formData = new FormData(e.currentTarget);
+        const formData = new FormData();
         formData.set('accountId', data.accountId);
         formData.set('categoryId', finalCategoryId);
         formData.set('type', data.type);
         formData.set('value', data.value);
         formData.set('transactionDate', data.transactionDate);
         formData.set('description', data.description);
+        formData.set('installmentsTotal', isInstallment && data.installmentsTotal ? data.installmentsTotal : '');
+
         startTransition(async () => action(formData));
     }
     return (
@@ -100,7 +113,6 @@ export function DialogAddTransaction({ accounts, categories }: DialogAddTransact
                     <DialogTitle>Nova transação</DialogTitle>
                 </DialogHeader>
                 <form
-                    ref={formRef}
                     onSubmit={handleSubmit}
                     className="flex flex-col gap-4 pt-2"
                 >
@@ -131,7 +143,10 @@ export function DialogAddTransaction({ accounts, categories }: DialogAddTransact
                             <div className="flex-1">
                                 <Select
                                     value={data.accountId}
-                                    onValueChange={(value) => setData((prev) => ({ ...prev, accountId: value }))}
+                                    onValueChange={(value) => {
+                                        clearSuccessFeedback();
+                                        setData((prev) => ({ ...prev, accountId: value }));
+                                    }}
                                     required
                                     disabled={pending}
                                 >
@@ -207,7 +222,7 @@ export function DialogAddTransaction({ accounts, categories }: DialogAddTransact
 
                     {/* Subcategoria (nível 1) */}
                     {children.length > 0 && (
-                        <div className="flex flex-col gap-1.5">
+                        <div className="flex flex-col gap-1.5 animate-in fade-in duration-200">
                             <Label>Subcategoria</Label>
                             <div className="flex items-center gap-2">
                                 <div className="flex-1">
@@ -244,14 +259,17 @@ export function DialogAddTransaction({ accounts, categories }: DialogAddTransact
                     )}
 
                     {/* Sub-subcategoria (nível 2) */}
-                    {grandchildren.length > 0 && (
-                        <div className="flex flex-col gap-1.5">
+                    {data.subcategoryId && grandchildren.length > 0 && (
+                        <div className="flex flex-col gap-1.5 animate-in fade-in duration-200">
                             <Label>Detalhe</Label>
                             <div className="flex items-center gap-2">
                                 <div className="flex-1">
                                     <Select
                                         value={data.subsubcategoryId}
-                                        onValueChange={(value) => setData((prev) => ({ ...prev, subsubcategoryId: value }))}
+                                        onValueChange={(value) => {
+                                            clearSuccessFeedback();
+                                            setData((prev) => ({ ...prev, subsubcategoryId: value }));
+                                        }}
                                         disabled={pending}
                                     >
                                         <SelectTrigger className="w-full">
@@ -314,6 +332,43 @@ export function DialogAddTransaction({ accounts, categories }: DialogAddTransact
                         {state?.errors?.transactionDate?.[0] && <InputError message={state.errors.transactionDate[0]} />}
                     </div>
 
+                    {/* Opção de Parcelamento */}
+                    <label htmlFor="isInstallment" className="flex items-center gap-2 py-1 cursor-pointer select-none text-sm">
+                        <input
+                            type="checkbox"
+                            id="isInstallment"
+                            checked={isInstallment}
+                            onChange={(e) => {
+                                clearSuccessFeedback();
+                                setIsInstallment(e.target.checked);
+                                if (!e.target.checked) setData((prev) => ({ ...prev, installmentsTotal: '' }));
+                            }}
+                            disabled={pending}
+                            className="size-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        />
+                        Esta transação é parcelada
+                    </label>
+
+                    {/* Campo dinâmico do número de parcelas */}
+                    {isInstallment && (
+                        <div className="flex flex-col gap-1.5 animate-in fade-in duration-200">
+                            <Label htmlFor="installmentsTotal">Quantidade de Parcelas</Label>
+                            <Input
+                                id="installmentsTotal"
+                                name="installmentsTotal"
+                                type="number"
+                                min="2"
+                                max="72"
+                                step="1"
+                                placeholder="Ex: 2"
+                                value={data.installmentsTotal}
+                                onChange={handleChange}
+                                disabled={pending}
+                                required={isInstallment}
+                            />
+                        </div>
+                    )}
+
                     {/* Descrição */}
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="description">Descrição <span className="text-muted-foreground">(opcional)</span></Label>
@@ -324,13 +379,22 @@ export function DialogAddTransaction({ accounts, categories }: DialogAddTransact
                             value={data.description}
                             onChange={handleChange}
                             disabled={pending}
+
                         />
                         {state?.errors?.description?.[0] && <InputError message={state.errors.description[0]} />}
                     </div>
 
-                    {/* Mensagens de Feedback */}
-                    {feedback.error && <p className="text-sm text-red-600 dark:text-red-400">{feedback.error}</p>}
-                    {feedback.success && <p className="text-sm text-green-600 dark:text-green-400">{feedback.success}</p>}
+                    {/* Mensagens de Feedback Estilizadas */}
+                    {feedback.error && (
+                        <p className="text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 p-2.5 rounded-md border border-red-200 dark:border-red-900 animate-in fade-in">
+                            ⚠️ {feedback.error}
+                        </p>
+                    )}
+                    {feedback.success && (
+                        <p className="text-sm font-medium text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/50 p-2.5 rounded-md border border-green-200 dark:border-green-900 animate-in fade-in">
+                            ✅ {feedback.success}
+                        </p>
+                    )}
 
                     <Button
                         type="submit"

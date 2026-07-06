@@ -37,6 +37,7 @@ BEGIN
         REVOKE ALL ON TABLE users_public_active     FROM __ROLE_NAME__;
         REVOKE ALL ON TABLE users_admin_public      FROM __ROLE_NAME__;
         REVOKE ALL ON TABLE accounts_active         FROM __ROLE_NAME__;
+        REVOKE ALL ON TABLE transactions_all        FROM __ROLE_NAME__;
         REVOKE ALL ON TABLE transactions_detailed   FROM __ROLE_NAME__;
         REVOKE ALL ON TABLE budgets_with_spent      FROM __ROLE_NAME__;
 
@@ -48,17 +49,17 @@ END $$;
 -- ============================================================
 -- 2. Policies RLS
 -- ============================================================
-DROP POLICY IF EXISTS policy_users_backend              ON users;
-DROP POLICY IF EXISTS policy_users_public               ON users;
-DROP POLICY IF EXISTS policy_familys_backend            ON familys;
-DROP POLICY IF EXISTS policy_accounts_backend           ON accounts;
-DROP POLICY IF EXISTS policy_categories_backend         ON categories;
-DROP POLICY IF EXISTS policy_transactions_backend       ON transactions;
-DROP POLICY IF EXISTS policy_budgets_backend            ON budgets;
-DROP POLICY IF EXISTS policy_goals_backend              ON goals;
+DROP POLICY IF EXISTS policy_users_backend               ON users;
+DROP POLICY IF EXISTS policy_users_public                ON users;
+DROP POLICY IF EXISTS policy_familys_backend             ON familys;
+DROP POLICY IF EXISTS policy_accounts_backend            ON accounts;
+DROP POLICY IF EXISTS policy_categories_backend          ON categories;
+DROP POLICY IF EXISTS policy_transactions_backend        ON transactions;
+DROP POLICY IF EXISTS policy_budgets_backend             ON budgets;
+DROP POLICY IF EXISTS policy_goals_backend               ON goals;
 DROP POLICY IF EXISTS policy_verification_tokens_backend ON verification_tokens;
-DROP POLICY IF EXISTS policy_rate_limits_backend        ON rate_limits;
-DROP POLICY IF EXISTS policy_rate_limits_public         ON rate_limits;
+DROP POLICY IF EXISTS policy_rate_limits_backend         ON rate_limits;
+DROP POLICY IF EXISTS policy_rate_limits_public          ON rate_limits;
 
 -- ============================================================
 -- 3. Triggers e function
@@ -76,6 +77,7 @@ DROP FUNCTION IF EXISTS update_updated_at;
 -- 4. Views
 -- ============================================================
 DROP VIEW IF EXISTS budgets_with_spent      CASCADE;
+DROP VIEW IF EXISTS transactions_all        CASCADE;
 DROP VIEW IF EXISTS transactions_detailed   CASCADE;
 DROP VIEW IF EXISTS accounts_active         CASCADE;
 DROP VIEW IF EXISTS users_public_active     CASCADE;

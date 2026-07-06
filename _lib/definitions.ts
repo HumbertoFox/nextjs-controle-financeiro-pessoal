@@ -176,7 +176,16 @@ export const createTransactionActionSchema = z.object({
     transactionDate: z.string()
         .regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato inválido (YYYY-MM-DD)'),
     description: z.string({ error: 'Descrição inválida' })
-        .nullable()
+        .nullable(),
+    installmentsTotal: z.preprocess(
+        (val) => (val === '' || val === null || val === undefined ? null : Number(val)),
+        z.number()
+            .int('O número de parcelas deve ser um número inteiro.')
+            .min(2, 'O número mínimo de parcelas é 2.')
+            .max(72, 'O número máximo de parcelas é 72.')
+            .nullable()
+            .optional()
+    )
 });
 
 export type FormStateCreateAdmin =
@@ -341,6 +350,7 @@ export type FormStateCreateTransactionAction =
             value?: string[];
             transactionDate?: string[];
             description?: string[];
+            installmentsTotal?: string[];
         }
         success?: string;
         error?: string;

@@ -144,14 +144,49 @@ SELECT
     a.updated_at,
     u.name AS user_name
 FROM accounts a
-JOIN users u ON u.id = a.user_id AND u.deleted_at IS NULL
+JOIN users u
+    ON u.id = a.user_id AND u.deleted_at IS NULL
 WHERE a.deleted_at IS NULL;
 
 COMMENT ON VIEW accounts_active IS 'View de contas ativas com nome do usuário proprietário';
 
 -- ============================================================================
+-- VIEW: transactions_all
+-- Description: Todas as transações (ativas e deletadas) com nome da conta,
+--              categoria e informações de parcelamento
+-- Use case: Auditoria, administração e relatórios
+-- ============================================================================
+CREATE OR REPLACE VIEW transactions_all AS
+SELECT
+    t.id,
+    t.user_id,
+    t.account_id,
+    t.category_id,
+    t.type,
+    t.value,
+    t.description,
+    t.transaction_date,
+    t.status,
+    t.installment_group_id,
+    t.installment_number,
+    t.installments_total,
+    t.created_at,
+    t.updated_at,
+    t.deleted_at,
+    (t.deleted_at IS NOT NULL) AS is_deleted,
+    a.name AS account_name,
+    c.name AS category_name
+FROM transactions t
+JOIN accounts a
+    ON a.id = t.account_id
+JOIN categories c
+    ON c.id = t.category_id;
+
+COMMENT ON VIEW transactions_all IS 'View de todas as transações (ativas e deletadas), incluindo informações de parcelamento e indicador de exclusão';
+
+-- ============================================================================
 -- VIEW: transactions_detailed
--- Description: Transações com nome da conta e categoria
+-- Description: Transações ativas com nome da conta e categoria
 -- Use case: Extrato financeiro completo
 -- ============================================================================
 CREATE OR REPLACE VIEW transactions_detailed AS
@@ -165,15 +200,21 @@ SELECT
     t.description,
     t.transaction_date,
     t.status,
+    t.installment_group_id,
+    t.installment_number,
+    t.installments_total,
     t.created_at,
+    t.updated_at,
     a.name AS account_name,
     c.name AS category_name
 FROM transactions t
-JOIN accounts  a ON a.id = t.account_id
-JOIN categories c ON c.id = t.category_id
+JOIN accounts a
+    ON a.id = t.account_id
+JOIN categories c
+    ON c.id = t.category_id
 WHERE t.deleted_at IS NULL;
 
-COMMENT ON VIEW transactions_detailed IS 'View de transações ativas com nome da conta e categoria';
+COMMENT ON VIEW transactions_detailed IS 'View de transações ativas com nome da conta, categoria e informações de parcelamento';
 
 -- ============================================================================
 -- VIEW: budgets_with_spent
@@ -186,13 +227,13 @@ SELECT
     b.user_id,
     b.family_id,
     b.category_id,
-    c.name        AS category_name,
+    c.name AS category_name,
     b.planned_value,
     b.period,
     b.start_date,
     b.end_date,
-    COALESCE(SUM(t.value), 0)                          AS spent_value,
-    b.planned_value - COALESCE(SUM(t.value), 0)        AS remaining_value
+    COALESCE(SUM(t.value), 0) AS spent_value,
+    b.planned_value - COALESCE(SUM(t.value), 0) AS remaining_value
 FROM budgets b
 JOIN categories  c ON c.id = b.category_id
 LEFT JOIN transactions t

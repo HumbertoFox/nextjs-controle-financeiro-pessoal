@@ -33,7 +33,17 @@ export function TransactionsTable({ rows, total, pageSize }: TransactionsTablePr
                                     {formatDate(row.transaction_date)}
                                 </td>
                                 <td className="px-4 py-3 whitespace-nowrap">{row.account_name}</td>
-                                <td className="px-4 py-3 whitespace-nowrap">{row.category_name}</td>
+                                <td className="px-4 py-3 whitespace-nowrap">
+                                    <div className="flex items-center gap-2">
+                                        <span>{row.category_name}</span>
+                                        {/* Badge indicador de parcela */}
+                                        {row.installments_total && row.installment_number && (
+                                            <span className="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground ring-1 ring-inset ring-border">
+                                                {row.installment_number}/{row.installments_total}
+                                            </span>
+                                        )}
+                                    </div>
+                                </td>
                                 <td className="px-4 py-3 text-muted-foreground text-xs">
                                     {row.subcategory_name
                                         ? (row.subsubcategory_name
