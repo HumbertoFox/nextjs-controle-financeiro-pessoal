@@ -61,6 +61,76 @@ export const transactionRepository = {
     },
 
     // -------------------------------------------------------------------------
+    // Busca paginada de transações de um mês/ano específico (padrão: mês atual),
+    // com categoria e subcategoria resolvidas via hierarquia
+    // -------------------------------------------------------------------------
+    async findByUserIdMonthPaginated(
+        userId: string,
+        page: number,
+        pageSize: number,
+        month?: number,
+        year?: number,
+        client?: QueryExecutor
+    ): Promise<TransactionsPaginated> {
+        const executor = client ?? pool;
+        const offset = (page - 1) * pageSize;
+
+        const now = new Date();
+        const targetMonth = month ?? now.getMonth() + 1;
+        const targetYear = year ?? now.getFullYear();
+
+        const rowsResult = await executor.query<TransactionRow>(`
+            SELECT
+                t.id,
+                t.type,
+                t.value::text,
+                t.description,
+                t.transaction_date::text,
+                t.status,
+                a.name AS account_name,
+                COALESCE(gp.name, p.name, c.name) AS category_name,
+                CASE
+                    WHEN gp.id IS NOT NULL THEN p.name
+                    WHEN p.id  IS NOT NULL THEN c.name
+                    ELSE NULL
+                END AS subcategory_name,
+                CASE
+                    WHEN gp.id IS NOT NULL THEN c.name
+                    ELSE NULL
+                END AS subsubcategory_name
+            FROM transactions t
+            JOIN accounts    a  ON a.id = t.account_id
+            JOIN categories  c  ON c.id = t.category_id
+            LEFT JOIN categories p  ON p.id  = c.parent_id
+            LEFT JOIN categories gp ON gp.id = p.parent_id
+            WHERE t.user_id    = $1
+              AND t.deleted_at IS NULL
+              AND EXTRACT(MONTH FROM t.transaction_date) = $4
+              AND EXTRACT(YEAR  FROM t.transaction_date) = $5
+            ORDER BY t.transaction_date DESC, t.created_at DESC
+            LIMIT  $2
+            OFFSET $3
+        `,
+            [userId, pageSize, offset, targetMonth, targetYear]
+        );
+
+        const countResult = await executor.query<{ count: string }>(`
+            SELECT COUNT(*) FROM transactions
+            WHERE user_id = $1
+                AND deleted_at IS NULL
+                AND EXTRACT(MONTH FROM transaction_date) = $2
+                AND EXTRACT(YEAR  FROM transaction_date) = $3
+        `,
+            [userId, targetMonth, targetYear]
+        );
+
+        return {
+            rows: rowsResult.rows,
+            total: parseInt(countResult.rows[0].count, 10),
+        };
+    },
+
+    // -------------------------------------------------------------------------
     // Cria transação e atualiza saldo da conta atomicamente
     // -------------------------------------------------------------------------
     async create(data: {

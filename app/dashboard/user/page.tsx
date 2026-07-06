@@ -19,7 +19,10 @@ const breadcrumbItems = [
 export default async function UserPage() {
     const userActive = await getUser() as UserPublic;
     if (!userActive || !UserRolesZod.includes(userActive.role)) redirect('/dashboard');
-    const [user, { accounts }] = await Promise.all([userRepository.findActiveById(userActive.id), userRepository.getUserPageData(userActive.id)]);
+    const [user, { accounts }] = await Promise.all([
+        userRepository.findActiveById(userActive.id),
+        userRepository.getUserPageData(userActive.id)
+    ]);
     return (
         <>
             <DashboardSidebarHeader items={breadcrumbItems} />

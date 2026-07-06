@@ -31,7 +31,6 @@ export default async function TransactionsPage() {
         accountRepository.findByUserId(userActive.id),
         categoryRepository.findTreeByUserId(userActive.id)
     ]);
-
     return (
         <>
             <DashboardSidebarHeader items={breadcrumbItems} />
