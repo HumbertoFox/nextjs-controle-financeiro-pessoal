@@ -167,6 +167,41 @@ export const transactionRepository = {
     },
 
     // -------------------------------------------------------------------------
+    // Busca o total de gastos da família agrupados por categoria raiz via View
+    // -------------------------------------------------------------------------
+    async getFamilyDashboardExpensesByCategory(
+        familyId: string,
+        month: number,
+        year: number,
+        client?: QueryExecutor
+    ): Promise<{ category_name: string; total_value: number }[]> {
+        const executor = client ?? pool;
+
+        const result = await executor.query<{ category_name: string; total_value: string }>(`
+            SELECT 
+                v.root_name AS category_name,
+                SUM(t.value) AS total_value
+            FROM transactions t
+            JOIN view_categories_root_mapping v ON v.category_id = t.category_id
+            JOIN users u ON u.id = t.user_id
+            WHERE u.family_id = $1
+              AND t.type = 'EXPENSE'
+              AND t.deleted_at IS NULL
+              AND EXTRACT(MONTH FROM t.transaction_date) = $2
+              AND EXTRACT(YEAR FROM t.transaction_date) = $3
+            GROUP BY v.root_name
+            ORDER BY total_value DESC
+        `,
+            [familyId, month, year]
+        );
+
+        return result.rows.map(row => ({
+            category_name: row.category_name,
+            total_value: parseFloat(row.total_value)
+        }));
+    },
+
+    // -------------------------------------------------------------------------
     // Cria transação (ou parcelas) e atualiza saldo da conta de forma atômica
     // -------------------------------------------------------------------------
     async create(data: {

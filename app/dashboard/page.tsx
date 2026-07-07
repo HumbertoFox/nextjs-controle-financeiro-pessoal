@@ -7,6 +7,7 @@ import { ExpensesCategoryCard } from './expenses-category-card';
 import { UserPublic, UserRolesZod } from '@/_types';
 import { getUser } from '@/_lib/dal';
 import { redirect } from 'next/navigation';
+import { userRepository } from '@/_lib/userrepositorys';
 
 export const generateMetadata = async (): Promise<Metadata> => {
     return { title: 'Painel' };
@@ -17,16 +18,25 @@ const breadcrumbItems = [{ text: 'Painel' }];
 export default async function DashboardPage() {
     const userActive = await getUser() as UserPublic;
     if (!userActive || !UserRolesZod.includes(userActive.role)) redirect('/logout');
+
     const userId = userActive.id;
     const now = new Date();
     const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();
 
-    // Buscando dados de forma paralela no servidor
-    const [accounts, categoryExpenses] = await Promise.all([
+    // 1. Buscamos em paralelo o perfil completo do banco e os dados que dependem estritamente APENAS do userId
+    const [dbUser, accounts, categoryExpenses] = await Promise.all([
+        userRepository.findActiveById(userId),
         accountRepository.getDashboardBalances(userId),
         transactionRepository.getDashboardExpensesByCategory(userId, currentMonth, currentYear)
     ]);
+
+    const familyId = dbUser?.family_id;
+
+    // 2. Buscamos os gastos da família caso o ID exista (evitando query desnecessária)
+    const familyExpenses = familyId
+        ? await transactionRepository.getFamilyDashboardExpensesByCategory(familyId, currentMonth, currentYear)
+        : [];
     return (
         <>
             <DashboardSidebarHeader items={breadcrumbItems} />
@@ -45,8 +55,18 @@ export default async function DashboardPage() {
 
                     {/* Lado Direito: Ranking Macro de Gastos do mês atual (Ocupa 1 coluna) */}
                     <div className="flex flex-col gap-6">
-                        <h2 className="text-lg font-semibold text-foreground tracking-tight">Distribuição Mensal</h2>
-                        <ExpensesCategoryCard expenses={categoryExpenses} />
+                        <div className="flex flex-col gap-4">
+                            <h2 className="text-lg font-semibold text-foreground tracking-tight">Seus Gastos</h2>
+                            <ExpensesCategoryCard expenses={categoryExpenses} />
+                        </div>
+
+                        {/* Exibe o card da família apenas se o usuário possuir um vínculo familiar ativo */}
+                        {familyId && (
+                            <div className="flex flex-col gap-4">
+                                <h2 className="text-lg font-semibold text-foreground tracking-tight">Gastos da Família</h2>
+                                <ExpensesCategoryCard expenses={familyExpenses} />
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
