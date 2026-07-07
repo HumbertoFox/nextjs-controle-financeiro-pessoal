@@ -13,7 +13,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
 
 export default async function SettingsPage() {
     const userActive = await getUser() as UserPublic;
-    if (!userActive) redirect('/login');
+    if (!userActive) redirect('/logout');
     const user = await userRepository.findActiveById(userActive.id);
     const familyMembers = user.family_id ? await userRepository.findByFamilyId(user.family_id) : [];
     return (

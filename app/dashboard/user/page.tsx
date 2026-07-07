@@ -18,7 +18,7 @@ const breadcrumbItems = [
 
 export default async function UserPage() {
     const userActive = await getUser() as UserPublic;
-    if (!userActive || !UserRolesZod.includes(userActive.role)) redirect('/dashboard');
+    if (!userActive || !UserRolesZod.includes(userActive.role)) redirect('/logout');
     const [user, { accounts }] = await Promise.all([
         userRepository.findActiveById(userActive.id),
         userRepository.getUserPageData(userActive.id)

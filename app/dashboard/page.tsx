@@ -1,7 +1,12 @@
 import { DashboardSidebarHeader } from '@/_components/dashboard-sidebar-header';
-import { FileSliders, MonitorCog, UserRound } from 'lucide-react';
+import { accountRepository } from '@/_lib/accountrepository';
+import { transactionRepository } from '@/_lib/transactionrepository';
 import { Metadata } from 'next';
-import Link from 'next/link';
+import { AccountsSummary } from './accounts-summary';
+import { ExpensesCategoryCard } from './expenses-category-card';
+import { UserPublic, UserRolesZod } from '@/_types';
+import { getUser } from '@/_lib/dal';
+import { redirect } from 'next/navigation';
 
 export const generateMetadata = async (): Promise<Metadata> => {
     return { title: 'Painel' };
@@ -9,31 +14,40 @@ export const generateMetadata = async (): Promise<Metadata> => {
 
 const breadcrumbItems = [{ text: 'Painel' }];
 
-const cards = [
-    { href: "/dashboard/user", color: "border-blue-500", iconColor: "text-blue-500", icon: UserRound },
-    { href: "/dashboard/settings/profile", color: "border-green-500", iconColor: "text-green-500", icon: FileSliders },
-    { href: "/dashboard/settings/appearance", color: "border-purple-500", iconColor: "text-purple-500", icon: MonitorCog }
-];
+export default async function DashboardPage() {
+    const userActive = await getUser() as UserPublic;
+    if (!userActive || !UserRolesZod.includes(userActive.role)) redirect('/logout');
+    const userId = userActive.id;
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
 
-export default function DashboardPage() {
+    // Buscando dados de forma paralela no servidor
+    const [accounts, categoryExpenses] = await Promise.all([
+        accountRepository.getDashboardBalances(userId),
+        transactionRepository.getDashboardExpensesByCategory(userId, currentMonth, currentYear)
+    ]);
     return (
         <>
             <DashboardSidebarHeader items={breadcrumbItems} />
-            <div className="flex flex-1 flex-col-reverse lg:flex-col gap-4 p-2">
-                <div className="bg-muted/50 min-h-screen flex-1 rounded-xl md:min-h-min border border-emerald-500" />
-                <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                    {cards.map((card, index) => {
-                        const Icon = card.icon;
-                        return (
-                            <Link
-                                key={index}
-                                href={card.href}
-                                className={`flex items-center justify-center bg-muted/50 aspect-video rounded-xl border ${card.color} hover:border-2 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:bg-linear-to-br hover:from-muted hover:to-muted/60`}
-                            >
-                                <Icon className={`size-16 ${card.iconColor}`} />
-                            </Link>
-                        )
-                    })}
+            <div className="flex flex-col gap-8 p-2 max-w-7xl mx-auto w-full">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Painel</h1>
+                    <p className="text-muted-foreground">Veja a visão consolidada de suas finanças.</p>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-3 items-start">
+                    {/* Lado Esquerdo/Centro: Listagem e Saldos das Contas (Ocupa 2 colunas) */}
+                    <div className="md:col-span-2 flex flex-col gap-6">
+                        <h2 className="text-lg font-semibold text-foreground tracking-tight">Suas Contas</h2>
+                        <AccountsSummary accounts={accounts} />
+                    </div>
+
+                    {/* Lado Direito: Ranking Macro de Gastos do mês atual (Ocupa 1 coluna) */}
+                    <div className="flex flex-col gap-6">
+                        <h2 className="text-lg font-semibold text-foreground tracking-tight">Distribuição Mensal</h2>
+                        <ExpensesCategoryCard expenses={categoryExpenses} />
+                    </div>
                 </div>
             </div>
         </>

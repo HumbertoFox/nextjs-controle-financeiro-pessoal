@@ -160,9 +160,22 @@ export type AccountSummary = {
     readonly current_balance: string;
 }
 
+export type AccountsSummaryProps = {
+    accounts: Account[];
+}
+
 export type UserSummaryCardsProps = {
     user: UserDetailsProps;
     accounts: AccountSummary[];
+}
+
+export type CategoryExpense = {
+    category_name: string;
+    total_value: number;
+}
+
+export type ExpensesCategoryCardProps = {
+    expenses: CategoryExpense[];
 }
 
 export type ProfileForm = {

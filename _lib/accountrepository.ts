@@ -30,17 +30,33 @@ export const accountRepository = {
     ): Promise<{ id: string } | null> {
         const executor = client ?? pool;
         const result = await executor.query<{ id: string }>(`
-        SELECT id
-        FROM accounts
-        WHERE user_id = $1
-          AND lower(name) = lower($2)
-          AND type = $3
-          AND deleted_at IS NULL
-        LIMIT 1
-    `,
+            SELECT id
+            FROM accounts
+            WHERE user_id = $1
+                AND lower(name) = lower($2)
+                AND type = $3
+                AND deleted_at IS NULL
+            LIMIT 1
+        `,
             [userId, name, type]
         );
         return result.rows[0] ?? null;
+    },
+
+    // -------------------------------------------------------------------------
+    // Busca o saldo de todas as contas ativas de forma individualizada para o Dashboard via View
+    // -------------------------------------------------------------------------
+    async getDashboardBalances(userId: string, client?: QueryExecutor): Promise<Account[]> {
+        const executor = client ?? pool;
+        const result = await executor.query<Account>(`
+        SELECT id, name, type, current_balance::text, initial_balance::text
+            FROM accounts_active
+            WHERE user_id = $1
+            ORDER BY current_balance DESC, name ASC
+        `,
+            [userId]
+        );
+        return result.rows;
     },
 
     // -------------------------------------------------------------------------

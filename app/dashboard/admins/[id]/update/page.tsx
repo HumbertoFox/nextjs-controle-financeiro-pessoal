@@ -20,7 +20,7 @@ const breadcrumbItems = [
 export default async function Update({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const [user, csrfToken] = await Promise.all([userRepository.findActiveById(id), getCsrfToken()]);
-    if (!user) redirect('/dashboard');
+    if (!user) redirect('/logout');
     return (
         <>
             <DashboardSidebarHeader items={breadcrumbItems} />

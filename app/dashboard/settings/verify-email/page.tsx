@@ -13,7 +13,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
 
 export default async function VerifyEmailSettingsPage() {
     const user = await getUser() as UserPublic;
-    if (!user) redirect('/login');
+    if (!user) redirect('/logout');
     if (user.email_verified) redirect('/dashboard/settings/profile');
     const csrfToken = await getCsrfToken();
     return (

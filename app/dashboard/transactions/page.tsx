@@ -24,7 +24,7 @@ const PAGE_SIZE = 20;
 
 export default async function TransactionsPage() {
     const userActive = await getUser() as UserPublic;
-    if (!userActive || !UserRolesZod.includes(userActive.role)) redirect('/dashboard');
+    if (!userActive || !UserRolesZod.includes(userActive.role)) redirect('/logout');
 
     const [{ rows, total }, accounts, categories] = await Promise.all([
         transactionRepository.findByUserIdPaginated(userActive.id, 1, PAGE_SIZE),

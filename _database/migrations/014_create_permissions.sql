@@ -24,19 +24,20 @@ GRANT USAGE ON SCHEMA public TO __ROLE_NAME__;
 -- ============================================================================
 -- REVOKE: bloqueia acesso direto a todas as tabelas para PUBLIC
 -- ============================================================================
-REVOKE ALL ON users                 FROM PUBLIC;
-REVOKE ALL ON users_active          FROM PUBLIC;
-REVOKE ALL ON users_all             FROM PUBLIC;
-REVOKE ALL ON familys               FROM PUBLIC;
-REVOKE ALL ON accounts              FROM PUBLIC;
-REVOKE ALL ON categories            FROM PUBLIC;
-REVOKE ALL ON transactions          FROM PUBLIC;
-REVOKE ALL ON transactions_detailed FROM PUBLIC;
-REVOKE ALL ON transactions_all      FROM PUBLIC;
-REVOKE ALL ON budgets               FROM PUBLIC;
-REVOKE ALL ON goals                 FROM PUBLIC;
-REVOKE ALL ON verification_tokens   FROM PUBLIC;
-REVOKE ALL ON rate_limits           FROM PUBLIC;
+REVOKE ALL ON users                        FROM PUBLIC;
+REVOKE ALL ON users_active                 FROM PUBLIC;
+REVOKE ALL ON users_all                    FROM PUBLIC;
+REVOKE ALL ON familys                      FROM PUBLIC;
+REVOKE ALL ON accounts                     FROM PUBLIC;
+REVOKE ALL ON categories                   FROM PUBLIC;
+REVOKE ALL ON transactions                 FROM PUBLIC;
+REVOKE ALL ON transactions_detailed        FROM PUBLIC;
+REVOKE ALL ON transactions_all             FROM PUBLIC;
+REVOKE ALL ON budgets                      FROM PUBLIC;
+REVOKE ALL ON goals                        FROM PUBLIC;
+REVOKE ALL ON verification_tokens          FROM PUBLIC;
+REVOKE ALL ON rate_limits                  FROM PUBLIC;
+REVOKE ALL ON view_categories_root_mapping FROM PUBLIC;
 
 -- ============================================================================
 -- GRANT views públicas → PUBLIC (sem password)
@@ -61,12 +62,13 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON rate_limits         TO __ROLE_NAME__;
 -- ============================================================================
 -- GRANT views com dados sensíveis → somente backend
 -- ============================================================================
-GRANT SELECT ON users_active            TO __ROLE_NAME__;
-GRANT SELECT ON accounts_active         TO __ROLE_NAME__;
-GRANT SELECT ON users_all               TO __ROLE_NAME__;
-GRANT SELECT ON transactions_all        TO __ROLE_NAME__;
-GRANT SELECT ON transactions_detailed   TO __ROLE_NAME__;
-GRANT SELECT ON budgets_with_spent      TO __ROLE_NAME__;
+GRANT SELECT ON users_active                 TO __ROLE_NAME__;
+GRANT SELECT ON accounts_active              TO __ROLE_NAME__;
+GRANT SELECT ON users_all                    TO __ROLE_NAME__;
+GRANT SELECT ON transactions_all             TO __ROLE_NAME__;
+GRANT SELECT ON transactions_detailed        TO __ROLE_NAME__;
+GRANT SELECT ON budgets_with_spent           TO __ROLE_NAME__;
+GRANT SELECT ON view_categories_root_mapping TO __ROLE_NAME__;
 
 -- ============================================================================
 -- RLS: users

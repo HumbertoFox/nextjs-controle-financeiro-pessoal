@@ -14,7 +14,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
 
 export default async function FamilyPage() {
     const userActive = await getUser() as UserPublic;
-    if (!userActive) redirect('/login');
+    if (!userActive) redirect('/logout');
     const [user, csrfToken] = await Promise.all([userRepository.findActiveById(userActive.id), getCsrfToken()]);
     const familyMembers = user.family_id
         ? await userRepository.findByFamilyId(user.family_id)

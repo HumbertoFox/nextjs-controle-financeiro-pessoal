@@ -133,7 +133,41 @@ export const transactionRepository = {
     },
 
     // -------------------------------------------------------------------------
-    // Cria transação (ou parcelas) e atualiza saldo da conta atomicamente
+    // Busca o total de gastos agrupados por categoria raiz utilizando a View
+    // -------------------------------------------------------------------------
+    async getDashboardExpensesByCategory(
+        userId: string,
+        month: number,
+        year: number,
+        client?: QueryExecutor
+    ): Promise<{ category_name: string; total_value: number }[]> {
+        const executor = client ?? pool;
+
+        const result = await executor.query<{ category_name: string; total_value: string }>(`
+            SELECT 
+                v.root_name AS category_name,
+                SUM(t.value) AS total_value
+            FROM transactions t
+            JOIN view_categories_root_mapping v ON v.category_id = t.category_id
+            WHERE t.user_id = $1
+              AND t.type = 'EXPENSE'
+              AND t.deleted_at IS NULL
+              AND EXTRACT(MONTH FROM t.transaction_date) = $2
+              AND EXTRACT(YEAR FROM t.transaction_date) = $3
+            GROUP BY v.root_name
+            ORDER BY total_value DESC
+        `,
+            [userId, month, year]
+        );
+
+        return result.rows.map(row => ({
+            category_name: row.category_name,
+            total_value: parseFloat(row.total_value)
+        }));
+    },
+
+    // -------------------------------------------------------------------------
+    // Cria transação (ou parcelas) e atualiza saldo da conta de forma atômica
     // -------------------------------------------------------------------------
     async create(data: {
         userId: string;
@@ -148,14 +182,12 @@ export const transactionRepository = {
     }, client?: QueryExecutor): Promise<{ id: string }> {
         const executor = client ?? pool;
 
-        // Total de repetições: se não informado ou <= 1, vira 1 (transação avulsa)
         const totalInstallments = data.installmentsTotal && data.installmentsTotal > 1 ? data.installmentsTotal : 1;
         const isInstallment = totalInstallments > 1;
         const installmentGroupId = isInstallment ? crypto.randomUUID() : null;
 
         let firstTransactionId = '';
 
-        // Usando transação interna se nenhum client externo (pool já em transação) foi passado
         const shouldManageTransaction = !client;
         if (shouldManageTransaction) {
             await pool.query('BEGIN');
@@ -173,11 +205,11 @@ export const transactionRepository = {
                 const dateString = currentDate.toISOString().slice(0, 10);
 
                 const result = await executor.query<{ id: string }>(`
-                INSERT INTO transactions
-                    (user_id, account_id, category_id, type, value, description, transaction_date, status, installment_group_id, installment_number, installments_total)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-                RETURNING id
-            `,
+                    INSERT INTO transactions
+                        (user_id, account_id, category_id, type, value, description, transaction_date, status, installment_group_id, installment_number, installments_total)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                    RETURNING id
+                `,
                     [
                         data.userId,
                         data.accountId,
@@ -185,7 +217,7 @@ export const transactionRepository = {
                         data.type,
                         data.value,
                         data.description ?? null,
-                        data.transactionDate,
+                        dateString,
                         data.status ?? 'CONFIRMED',
                         installmentGroupId,
                         installmentNumber,
@@ -193,31 +225,19 @@ export const transactionRepository = {
                     ]
                 );
 
-                // atualiza saldo da conta
-                const delta = data.type === 'REVENUE' ? data.value : -data.value;
-                await executor.query(`
-                UPDATE accounts
-                SET current_balance = current_balance + $1
-                WHERE id = $2
-            `,
-                    [delta, data.accountId]
-                );
-
                 if (i === 0) {
                     firstTransactionId = result.rows[0].id;
                 }
             }
 
-            // Atualiza saldo da conta multiplicando o valor da parcela pela quantidade criadas
-            // Nota: Se suas parcelas representarem o valor TOTAL dividido, altere aqui para (data.value * totalInstallments) dependendo da sua regra de negócio. O código abaixo assume que data.value é o valor de cada parcela isolada.
             const totalValueInserted = data.value * totalInstallments;
             const delta = data.type === 'REVENUE' ? totalValueInserted : -totalValueInserted;
 
             await executor.query(`
-            UPDATE accounts
-            SET current_balance = current_balance + $1
-            WHERE id = $2
-        `,
+                UPDATE accounts
+                SET current_balance = current_balance + $1
+                WHERE id = $2
+            `,
                 [delta, data.accountId]
             );
 

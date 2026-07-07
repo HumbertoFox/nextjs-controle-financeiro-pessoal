@@ -217,6 +217,28 @@ WHERE t.deleted_at IS NULL;
 COMMENT ON VIEW transactions_detailed IS 'View de transações ativas com nome da conta, categoria e informações de parcelamento';
 
 -- ============================================================================
+-- View: view_categories_root_mapping
+-- Descrição: Mapeia cada categoria (seja nível 0, subcategoria ou sub-subcategoria)
+--            diretamente ao ID e Nome da sua respectiva categoria Raiz (Nível 0).
+--            Utilizada para agrupamentos macros e consolidação de gráficos/dashboards.
+-- ============================================================================
+CREATE OR REPLACE VIEW view_categories_root_mapping AS
+SELECT 
+    c.id AS category_id,
+    COALESCE(gp.id, p.id, c.id) AS root_id,
+    COALESCE(gp.name, p.name, c.name) AS root_name,
+    c.user_id,
+    c.type
+FROM categories c
+LEFT JOIN categories p
+    ON p.id  = c.parent_id AND p.deleted_at IS NULL
+LEFT JOIN categories gp
+    ON gp.id = p.parent_id AND gp.deleted_at IS NULL
+WHERE c.deleted_at IS NULL;
+
+COMMENT ON VIEW view_categories_root_mapping IS 'Mapeia cada categoria (seja nível 0, subcategoria ou sub-subcategoria) diretamente ao ID e Nome da sua respectiva categoria Raiz (Nível 0). Utilizada para agrupamentos macros e consolidação de gráficos/dashboards.';
+
+-- ============================================================================
 -- VIEW: budgets_with_spent
 -- Description: Orçamentos com total já gasto no período
 -- Use case: Dashboard de controle orçamentário

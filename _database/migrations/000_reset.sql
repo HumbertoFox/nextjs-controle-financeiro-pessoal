@@ -32,14 +32,15 @@ BEGIN
         REVOKE ALL ON TABLE rate_limits         FROM __ROLE_NAME__;
 
         -- Views
-        REVOKE ALL ON TABLE users_active            FROM __ROLE_NAME__;
-        REVOKE ALL ON TABLE users_public            FROM __ROLE_NAME__;
-        REVOKE ALL ON TABLE users_public_active     FROM __ROLE_NAME__;
-        REVOKE ALL ON TABLE users_admin_public      FROM __ROLE_NAME__;
-        REVOKE ALL ON TABLE accounts_active         FROM __ROLE_NAME__;
-        REVOKE ALL ON TABLE transactions_all        FROM __ROLE_NAME__;
-        REVOKE ALL ON TABLE transactions_detailed   FROM __ROLE_NAME__;
-        REVOKE ALL ON TABLE budgets_with_spent      FROM __ROLE_NAME__;
+        REVOKE ALL ON TABLE users_active                 FROM __ROLE_NAME__;
+        REVOKE ALL ON TABLE users_public                 FROM __ROLE_NAME__;
+        REVOKE ALL ON TABLE users_public_active          FROM __ROLE_NAME__;
+        REVOKE ALL ON TABLE users_admin_public           FROM __ROLE_NAME__;
+        REVOKE ALL ON TABLE accounts_active              FROM __ROLE_NAME__;
+        REVOKE ALL ON TABLE transactions_all             FROM __ROLE_NAME__;
+        REVOKE ALL ON TABLE transactions_detailed        FROM __ROLE_NAME__;
+        REVOKE ALL ON TABLE budgets_with_spent           FROM __ROLE_NAME__;
+        REVOKE ALL ON TABLE view_categories_root_mapping FROM __ROLE_NAME__;
 
         REASSIGN OWNED BY __ROLE_NAME__ TO CURRENT_USER;
         DROP OWNED BY __ROLE_NAME__;
@@ -76,15 +77,16 @@ DROP FUNCTION IF EXISTS update_updated_at;
 -- ============================================================
 -- 4. Views
 -- ============================================================
-DROP VIEW IF EXISTS budgets_with_spent      CASCADE;
-DROP VIEW IF EXISTS transactions_all        CASCADE;
-DROP VIEW IF EXISTS transactions_detailed   CASCADE;
-DROP VIEW IF EXISTS accounts_active         CASCADE;
-DROP VIEW IF EXISTS users_public_active     CASCADE;
-DROP VIEW IF EXISTS users_active            CASCADE;
-DROP VIEW IF EXISTS users_all               CASCADE;
-DROP VIEW IF EXISTS users_public            CASCADE;
-DROP VIEW IF EXISTS users_admin_public      CASCADE;
+DROP VIEW IF EXISTS view_categories_root_mapping CASCADE;
+DROP VIEW IF EXISTS budgets_with_spent           CASCADE;
+DROP VIEW IF EXISTS transactions_all             CASCADE;
+DROP VIEW IF EXISTS transactions_detailed        CASCADE;
+DROP VIEW IF EXISTS accounts_active              CASCADE;
+DROP VIEW IF EXISTS users_public_active          CASCADE;
+DROP VIEW IF EXISTS users_active                 CASCADE;
+DROP VIEW IF EXISTS users_all                    CASCADE;
+DROP VIEW IF EXISTS users_public                 CASCADE;
+DROP VIEW IF EXISTS users_admin_public           CASCADE;
 
 -- ============================================================
 -- 5. Tables (ordem respeita FKs)
