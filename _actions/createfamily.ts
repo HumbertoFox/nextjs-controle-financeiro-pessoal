@@ -28,6 +28,8 @@ export async function createFamily(_: FormStateCreateFamily, formData: FormData)
 
     try {
         const existingUser = await userRepository.findActiveById(sessionUser.id);
+        
+        if (sessionUser.role === 'ADMIN') return { warning: 'Administradores não podem criar família!'};
         if (!existingUser) return { warning: 'Usuário não encontrado.' };
         if (existingUser.family_id) return { warning: 'Usuário já está associado a uma família.' };
 
