@@ -59,7 +59,7 @@ export default function SettingsPageClient({ user, familyMembers }: UserSettings
                     <span>{formatDate(user.created_at)}</span>
                 </div>
                 <div>
-                    <strong>Usuário atualizou em : </strong>
+                    <strong>Último acesso do usuário: </strong>
                     <span>{formatDate(user.updated_at)}</span>
                 </div>
             </div>
