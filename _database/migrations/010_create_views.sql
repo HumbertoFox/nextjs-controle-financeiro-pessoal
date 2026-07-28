@@ -60,6 +60,7 @@ SELECT
     u.family_id,
     u.avatar,
     u.email_verified,
+    u.password_changed_at,
     u.created_at,
     u.updated_at,
     CASE WHEN u.role = 'MEMBER' THEN f.name ELSE NULL END AS family_name

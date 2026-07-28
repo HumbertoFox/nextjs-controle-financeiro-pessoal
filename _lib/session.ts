@@ -33,8 +33,14 @@ export async function createSession(userId: string, role: UserRole, sessionVersi
     const expTimestamp = now + TOKEN_LIFETIME;
     const expDate = new Date(expTimestamp * 1000);
 
+    // Captura o password_changed_at atual para "ancorar" este JWT a essa versão da senha
+    const user = await userRepository.findActiveById(userId);
+    const passwordChangedAt = user?.password_changed_at
+        ? Math.floor(new Date(user.password_changed_at).getTime() / 1000)
+        : 0;
+
     const session = await new SignJWT({
-        userId, role, sessionVersion, iat: now
+        userId, role, sessionVersion, passwordChangedAt, iat: now
     })
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt(now)
@@ -83,9 +89,19 @@ export async function updateSession() {
         return null;
     };
 
-    const user = await userRepository.findSessionVersion(String(payload.userId));
+    const user = await userRepository.findActiveById(String(payload.userId));
 
     if (!user || user.session_version !== payload.sessionVersion) {
+        (await cookies()).delete('sessionAuth');
+        return null;
+    }
+
+    const currentPasswordChangedAt = user.password_changed_at
+        ? Math.floor(new Date(user.password_changed_at).getTime() / 1000)
+        : 0;
+    const tokenPasswordChangedAt = typeof payload.passwordChangedAt === 'number' ? payload.passwordChangedAt : 0;
+
+    if (currentPasswordChangedAt > tokenPasswordChangedAt) {
         (await cookies()).delete('sessionAuth');
         return null;
     }
@@ -98,6 +114,7 @@ export async function updateSession() {
             userId: payload.userId,
             role: payload.role,
             sessionVersion: payload.sessionVersion,
+            passwordChangedAt: tokenPasswordChangedAt,
             iat: payload.iat
         })
             .setProtectedHeader({ alg: 'HS256' })
