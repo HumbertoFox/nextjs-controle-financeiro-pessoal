@@ -55,8 +55,6 @@ export type UserDetailsProps = {
 
 export type UserActive = UserDetailsProps & {
     readonly password: string;
-    readonly session_version: number;
-    readonly password_changed_at: string | null;
 }
 
 export type UserProfilePageProps = {
@@ -326,7 +324,6 @@ export type User = UserPublic & {
     readonly password: string;
     readonly family_id?: string | null;
     readonly deleted_at?: string | null;
-    readonly password_changed_at: string | null;
 }
 
 export type VerificationToken = {

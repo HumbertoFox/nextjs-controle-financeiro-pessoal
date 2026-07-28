@@ -16,7 +16,7 @@ function buildSetClause(data: Record<string, unknown>, allowed: ReadonlySet<stri
     return { setClause, values };
 }
 
-const USER_COMMON_COLUMNS = ` id, name, email, role, is_owner, avatar, email_verified, password_changed_at, deleted_at, created_at, updated_at `;
+const USER_PUBLIC_COLUMNS = ` id, name, email, role, is_owner, avatar, email_verified, deleted_at, created_at, updated_at `;
 const USER_PUBLIC_ACTIVE_COLUMNS = ` id, name, email, role, is_owner, avatar, email_verified, created_at, updated_at `;
 const USER_ACTIVE_COLUMNS = ` id, name, email, role, is_owner, avatar, family_id, family_name, email_verified, created_at, updated_at `;
 
@@ -279,7 +279,7 @@ export const userRepository = {
             SET ${setClause}
             WHERE id = $1
             AND deleted_at IS NULL
-            RETURNING ${USER_COMMON_COLUMNS}
+            RETURNING ${USER_PUBLIC_COLUMNS}
         `,
             [id, ...values]
         );
@@ -296,7 +296,7 @@ export const userRepository = {
             UPDATE users
             SET ${setClause}
             WHERE id = $1
-            RETURNING ${USER_COMMON_COLUMNS}
+            RETURNING ${USER_PUBLIC_COLUMNS}
         `,
             [id, ...values]
         );
@@ -310,10 +310,9 @@ export const userRepository = {
         const executor = client ?? pool;
         const result = await executor.query<User>(`
             UPDATE users
-            SET password = $1,
-            password_changed_at = now()
+            SET password = $1
             WHERE id = $2
-            RETURNING ${USER_COMMON_COLUMNS}
+            RETURNING ${USER_PUBLIC_COLUMNS}
         `,
             [password, id]
         );
@@ -329,7 +328,7 @@ export const userRepository = {
             UPDATE users
             SET deleted_at = NOW()
             WHERE id = $1
-            RETURNING ${USER_COMMON_COLUMNS}
+            RETURNING ${USER_PUBLIC_COLUMNS}
         `,
             [id]
         );
@@ -345,7 +344,7 @@ export const userRepository = {
             UPDATE users
             SET deleted_at = NULL
             WHERE id = $1
-            RETURNING ${USER_COMMON_COLUMNS}
+            RETURNING ${USER_PUBLIC_COLUMNS}
         `,
             [id]
         );
@@ -361,7 +360,7 @@ export const userRepository = {
             UPDATE users
             SET email_verified = $1
             WHERE id = $2
-            RETURNING ${USER_COMMON_COLUMNS}
+            RETURNING ${USER_PUBLIC_COLUMNS}
         `,
             [date, id]
         );
@@ -375,10 +374,9 @@ export const userRepository = {
         const executor = client ?? pool;
         const result = await executor.query(`
             UPDATE users
-            SET password = $2,
-            password_changed_at = now()
+            SET password = $2
             WHERE email = $1
-            RETURNING ${USER_COMMON_COLUMNS}
+            RETURNING ${USER_PUBLIC_COLUMNS}
         `,
             [email, hashedPassword]
         );
